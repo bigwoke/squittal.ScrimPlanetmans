@@ -2,8 +2,10 @@
 @page "/Admin"
 @page "/MatchSetup"
 
+@using Microsoft.Extensions.Configuration;
 @using squittal.ScrimPlanetmans.App.Pages.Shared;
 @using squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup.MatchTeamComposer;
+@using squittal.ScrimPlanetmans.App.Services.GlobalHotKeys;
 @using squittal.ScrimPlanetmans.CensusStream;
 @using squittal.ScrimPlanetmans.Models.Planetside;
 @using squittal.ScrimPlanetmans.Models.ScrimEngine
@@ -23,6 +25,7 @@
 @inject IZoneService ZoneService
 @inject IWorldService WorldService
 @inject IScrimRulesetManager RulesetManager
+@inject IConfiguration Configuration
 
 @implements IDisposable
 
@@ -310,6 +313,20 @@
         _currentRound = ScrimMatchEngine.GetCurrentRound();
         _matchState = ScrimMatchEngine.GetMatchState();
         _matchId = ScrimMatchEngine.GetMatchId();
+
+        if (int.TryParse(Configuration.GetSection("Keybinds")["StartMatch"], out int keyId))
+        {
+            var key = (System.Windows.Forms.Keys)keyId;
+
+            if (int.TryParse(Configuration.GetSection("KeyModifiers")["StartMatch"], out int mod))
+            {
+                HotKeyManager.Add(key, KeyModifiers.NoRepeat | (KeyModifiers)mod, StartMatch);
+            }
+            else
+            {
+                HotKeyManager.Add(key, KeyModifiers.NoRepeat, StartMatch);
+            }
+        }
     }
 
     public void Dispose()
