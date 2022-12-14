@@ -47,8 +47,11 @@ namespace squittal.ScrimPlanetmans.App.Services.GlobalHotKeys
 
         public static void Remove(int id)
         {
-            _wnd.Invoke(new UnregisterDelegate(Unregister), _hwnd, id);
-            _hotkeys.Remove(id);
+            if (_hotkeys.ContainsKey(id))
+            {
+                _wnd.Invoke(new UnregisterDelegate(Unregister), _hwnd, id);
+                _hotkeys.Remove(id);
+            }
         }
 
         private static void Register(IntPtr hwnd, int id, uint mod, uint key)
