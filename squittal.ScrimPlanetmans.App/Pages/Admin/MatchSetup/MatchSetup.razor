@@ -291,6 +291,7 @@
 
             _isLoading = false;
             InvokeAsyncStateHasChanged();
+            SetHotKeys();
         }
     }
 
@@ -313,8 +314,6 @@
         _currentRound = ScrimMatchEngine.GetCurrentRound();
         _matchState = ScrimMatchEngine.GetMatchState();
         _matchId = ScrimMatchEngine.GetMatchId();
-
-        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:StartMatch"), StartMatch);
     }
 
     public void Dispose()
@@ -322,6 +321,32 @@
         MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
         MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
         MessageService.RaiseRulesetSettingChangeEvent -= ReceiveRulesetSettingChangeEvent;
+    }
+
+    private void SetHotKeys()
+    {
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:StartMatch"), StartMatch);
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:Rematch"), () => ClearMatch(true));
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:ClearMatch"), () => ClearMatch(false));
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:PauseOrResumeRound"), () =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
+            {
+                PauseRound();
+            }
+            else
+            {
+                ResumeRound();
+            }
+        });
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:EndRound"), EndRound);
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:ResetRound"), () =>
+        {
+            if (_isDeleteDataEnabled)
+            {
+                ResetRound();
+            }
+        });
     }
 
     private async Task SetUpRulesetsAsync()
