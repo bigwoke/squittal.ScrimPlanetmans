@@ -314,19 +314,7 @@
         _matchState = ScrimMatchEngine.GetMatchState();
         _matchId = ScrimMatchEngine.GetMatchId();
 
-        if (int.TryParse(Configuration.GetSection("Keybinds")["StartMatch"], out int keyId))
-        {
-            var key = (System.Windows.Forms.Keys)keyId;
-
-            if (int.TryParse(Configuration.GetSection("KeyModifiers")["StartMatch"], out int mod))
-            {
-                HotKeyManager.Add(key, KeyModifiers.NoRepeat | (KeyModifiers)mod, StartMatch);
-            }
-            else
-            {
-                HotKeyManager.Add(key, KeyModifiers.NoRepeat, StartMatch);
-            }
-        }
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:StartMatch"), StartMatch);
     }
 
     public void Dispose()

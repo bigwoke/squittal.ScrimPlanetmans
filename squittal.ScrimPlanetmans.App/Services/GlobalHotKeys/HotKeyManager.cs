@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
 
 namespace squittal.ScrimPlanetmans.App.Services.GlobalHotKeys
 {
@@ -42,7 +43,24 @@ namespace squittal.ScrimPlanetmans.App.Services.GlobalHotKeys
                 return id;
             }
 
-            return -1;
+            return 0;
+        }
+
+        public static bool TryAddFromConfig(IConfigurationSection config, Action action)
+        {
+            if (int.TryParse(config["Key"], out int keyId) &&
+                int.TryParse(config["Modifier"], out int modId))
+            {
+                Keys key = (Keys)keyId;
+                KeyModifiers mods = KeyModifiers.NoRepeat | (KeyModifiers)modId;
+
+                if (key != Keys.None)
+                {
+                    return Add(key, mods, action) > 0;
+                }
+            }
+
+            return false;
         }
 
         public static void Remove(int id)
