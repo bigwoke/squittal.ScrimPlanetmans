@@ -325,9 +325,30 @@
 
     private void SetHotKeys()
     {
-        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:StartMatch"), StartMatch);
-        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:Rematch"), () => ClearMatch(true));
-        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:ClearMatch"), () => ClearMatch(false));
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:StartMatch"), () =>
+        {
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            {
+                StartMatch();
+            }
+        });
+
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:Rematch"), () =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1)
+            {
+                ClearMatch(true);
+            }
+        });
+
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:ClearMatch"), () =>
+        {
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            {
+                ClearMatch(false);
+            }
+        });
+
         HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:PauseOrResumeRound"), () =>
         {
             if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
@@ -339,7 +360,15 @@
                 ResumeRound();
             }
         });
-        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:EndRound"), EndRound);
+
+        HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:EndRound"), () =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
+            {
+                EndRound();
+            }
+        });
+
         HotKeyManager.TryAddFromConfig(Configuration.GetSection("HotKeys:ResetRound"), () =>
         {
             if (_isDeleteDataEnabled)
