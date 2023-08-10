@@ -24,7 +24,7 @@
 @inject IZoneService ZoneService
 @inject IWorldService WorldService
 @inject IScrimRulesetManager RulesetManager
-@inject IMatchControlClient MatchControllerSignalRClient
+@inject IMatchControlClient MatchControlClient
 
 @implements IDisposable
 
@@ -380,7 +380,7 @@
 
     private async Task ConfigureRemoteMatchControlsAsync()
     {
-        MatchControllerSignalRClient.StartMatch(() =>
+        MatchControlClient.StartMatch(() =>
         {
             if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
             {
@@ -388,7 +388,7 @@
             }
         });
 
-        MatchControllerSignalRClient.Rematch(() =>
+        MatchControlClient.Rematch(() =>
         {
             if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1)
             {
@@ -396,7 +396,7 @@
             }
         });
 
-        MatchControllerSignalRClient.ClearMatch(() =>
+        MatchControlClient.ClearMatch(() =>
         {
             if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
             {
@@ -404,7 +404,7 @@
             }
         });
 
-        MatchControllerSignalRClient.PauseOrResumeRound(() =>
+        MatchControlClient.PauseOrResumeRound(() =>
         {
             if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
             {
@@ -416,7 +416,7 @@
             }
         });
 
-        MatchControllerSignalRClient.EndRound(() =>
+        MatchControlClient.EndRound(() =>
         {
             if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
             {
@@ -424,7 +424,7 @@
             }
         });
 
-        MatchControllerSignalRClient.ResetRound(() =>
+        MatchControlClient.ResetRound(() =>
         {
             if (_isDeleteDataEnabled)
             {
@@ -432,7 +432,7 @@
             }
         });
 
-        await MatchControllerSignalRClient.StartAsync();
+        await MatchControlClient.StartAsync();
     }
 
     public void Dispose()
