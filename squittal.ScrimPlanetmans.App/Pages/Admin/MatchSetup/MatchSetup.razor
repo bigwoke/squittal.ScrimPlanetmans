@@ -4,6 +4,7 @@
 
 @using squittal.ScrimPlanetmans.App.Pages.Shared;
 @using squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup.MatchTeamComposer;
+@using squittal.ScrimPlanetmans.App.SignalR.Clients;
 @using squittal.ScrimPlanetmans.CensusStream;
 @using squittal.ScrimPlanetmans.Models.Planetside;
 @using squittal.ScrimPlanetmans.Models.ScrimEngine
@@ -23,6 +24,7 @@
 @inject IZoneService ZoneService
 @inject IWorldService WorldService
 @inject IScrimRulesetManager RulesetManager
+@inject IMatchControlClient MatchControllerSignalRClient
 
 @implements IDisposable
 
@@ -343,6 +345,8 @@
 
             _isLoading = false;
             InvokeAsyncStateHasChanged();
+
+            await ConfigureRemoteMatchControlsAsync();
         }
     }
 
@@ -372,6 +376,63 @@
         _currentRound = ScrimMatchEngine.GetCurrentRound();
         _matchState = ScrimMatchEngine.GetMatchState();
         _matchId = ScrimMatchEngine.GetMatchId();
+    }
+
+    private async Task ConfigureRemoteMatchControlsAsync()
+    {
+        MatchControllerSignalRClient.StartMatch(() =>
+        {
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            {
+                StartMatch();
+            }
+        });
+
+        MatchControllerSignalRClient.Rematch(() =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1)
+            {
+                ClearMatch(true);
+            }
+        });
+
+        MatchControllerSignalRClient.ClearMatch(() =>
+        {
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            {
+                ClearMatch(false);
+            }
+        });
+
+        MatchControllerSignalRClient.PauseOrResumeRound(() =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
+            {
+                PauseRound();
+            }
+            else
+            {
+                ResumeRound();
+            }
+        });
+
+        MatchControllerSignalRClient.EndRound(() =>
+        {
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
+            {
+                EndRound();
+            }
+        });
+
+        MatchControllerSignalRClient.ResetRound(() =>
+        {
+            if (_isDeleteDataEnabled)
+            {
+                ResetRound();
+            }
+        });
+
+        await MatchControllerSignalRClient.StartAsync();
     }
 
     public void Dispose()

@@ -1,9 +1,14 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using squittal.ScrimPlanetmans.App.Hubs;
+using squittal.ScrimPlanetmans.App.SignalR.Clients;
 using squittal.ScrimPlanetmans.CensusServices;
 using squittal.ScrimPlanetmans.CensusStream;
 using squittal.ScrimPlanetmans.Data;
@@ -14,7 +19,6 @@ using squittal.ScrimPlanetmans.Services.Planetside;
 using squittal.ScrimPlanetmans.Services.Rulesets;
 using squittal.ScrimPlanetmans.Services.ScrimMatch;
 using squittal.ScrimPlanetmans.Services.ScrimMatchReports;
-using System;
 
 namespace squittal.ScrimPlanetmans.App
 {
@@ -35,6 +39,10 @@ namespace squittal.ScrimPlanetmans.App
             services.AddServerSideBlazor();
 
             services.AddSignalR();
+            services.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
+            });
 
             services.AddDbContext<PlanetmansDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("PlanetmansDbContext"),
@@ -111,6 +119,8 @@ namespace squittal.ScrimPlanetmans.App
             services.AddTransient<ISqlScriptRunner, SqlScriptRunner>();
 
             services.AddTransient<DatabaseMaintenanceService>();
+
+            services.AddScoped<IMatchControlClient, MatchControlClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -136,6 +146,7 @@ namespace squittal.ScrimPlanetmans.App
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapHub<MatchControlHub>("/Hubs/MatchControl");
             });
         }
     }
