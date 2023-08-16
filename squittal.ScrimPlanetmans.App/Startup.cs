@@ -8,7 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using squittal.ScrimPlanetmans.App.Hubs;
+using squittal.ScrimPlanetmans.App.Services;
 using squittal.ScrimPlanetmans.App.SignalR.Clients;
+using squittal.ScrimPlanetmans.App.SignalR.Hubs;
 using squittal.ScrimPlanetmans.CensusServices;
 using squittal.ScrimPlanetmans.CensusStream;
 using squittal.ScrimPlanetmans.Data;
@@ -120,6 +122,7 @@ namespace squittal.ScrimPlanetmans.App
 
             services.AddTransient<DatabaseMaintenanceService>();
 
+            services.AddHostedService<InterprocessService>();
             services.AddScoped<IMatchControlClient, MatchControlClient>();
         }
 
@@ -147,6 +150,7 @@ namespace squittal.ScrimPlanetmans.App
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapHub<MatchControlHub>("/Hubs/MatchControl");
+                endpoints.MapHub<MatchDataHub>("/Hubs/MatchData");
             });
         }
     }
