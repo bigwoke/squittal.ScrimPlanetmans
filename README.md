@@ -18,9 +18,9 @@ An app for running, streaming, and collecting data for Planetside 2 scrims.
 
 ## Requirements
 
-### .NET Core 3.1 SDK
+### .NET 6 SDK
 
-The .NET Core 3.1 SDK and Runtime (the runtime is included with the SDK) is required to build and run the app. [Download the latest version of the .NET Core 3.1 SDK from the downloads page.](https://dotnet.microsoft.com/en-us/download/dotnet "Download .NET Core 3.0"). Expand the "Out of support versions" section to see the .NET Core 3.1 option.
+The .NET Core 6 SDK and Runtime (the runtime is included with the SDK) is required to build and run the app. [Download the latest version of the .NET 6 SDK from the downloads page.](https://dotnet.microsoft.com/en-us/download/dotnet "Download .NET 6").
 
 ### SQL Server Express LocalDb
 
