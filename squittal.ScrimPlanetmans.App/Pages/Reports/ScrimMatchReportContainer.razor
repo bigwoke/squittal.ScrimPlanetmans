@@ -518,6 +518,7 @@
     public string i_selectedPlayerInput { get; set; }
     private string _renderedSelectedPlayerId { get; set; }
 
+    private bool _showRevivesInTable = false;
 
     private IEnumerable<ScrimMatchReportInfantryPlayerStats> _playerStats { get; set; }
     private IEnumerable<ScrimMatchReportInfantryTeamStats> _teamStats { get; set; }
@@ -719,6 +720,7 @@
     private async Task LoadInfantryTeamStats(CancellationToken cancellationToken)
     {
         _teamStats = await ReportDataService.GetHistoricalScrimMatchInfantryTeamStatsAsync(_renderedScrimMatchId, cancellationToken);
+        _showRevivesInTable = _teamStats.Any(t => t.Revives > 0);
     }
 
     private async Task LoadInfantryTeamRoundStats(CancellationToken cancellationToken)
