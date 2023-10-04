@@ -360,18 +360,20 @@
 
         try
         {
-
             var paginatedList = await ReportDataService.GetHistoricalScrimMatchesListAsync(_renderedPageIndex, _searchFilter, ctsMatches.Token);
 
             ctsMatches.Token.ThrowIfCancellationRequested();
 
             _storeScrimMatchList = new List<ScrimMatchInfo>();
 
-            _storeScrimMatchList.AddRange(paginatedList.Contents);
+            if (paginatedList is not null)
+            {
+                _storeScrimMatchList.AddRange(paginatedList.Contents);
 
-            _renderedPageCount = paginatedList.PageCount;
-            _renderedHasNextPage = paginatedList.HasNextPage;
-            _renderedHasPreviousPage = paginatedList.HasPreviousPage;
+                _renderedPageCount = paginatedList.PageCount;
+                _renderedHasNextPage = paginatedList.HasNextPage;
+                _renderedHasPreviousPage = paginatedList.HasPreviousPage;
+            }
         }
         catch
         {
