@@ -2,6 +2,12 @@
 using System.IO;
 using Microsoft.SqlServer.Management.Smo;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using Microsoft.Data.SqlClient;
+using System.Linq;
+using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace squittal.ScrimPlanetmans.Services
 {
@@ -12,13 +18,13 @@ namespace squittal.ScrimPlanetmans.Services
         private readonly string _scriptDirectory;
         private readonly string _adhocScriptDirectory;
 
-        private readonly Server _server = new Server("(LocalDB)\\MSSQLLocalDB");
-
         private readonly ILogger<SqlScriptRunner> _logger;
+        private readonly IConfiguration _config;
 
-        public SqlScriptRunner(ILogger<SqlScriptRunner> logger)
+        public SqlScriptRunner(ILogger<SqlScriptRunner> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
 
             _basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
             _scriptDirectory = Path.Combine(_basePath, _sqlDirectory);
@@ -35,8 +41,8 @@ namespace squittal.ScrimPlanetmans.Services
                 var scriptFileInfo = new FileInfo(scriptPath);
 
                 string scriptText = scriptFileInfo.OpenText().ReadToEnd();
-                
-                _server.ConnectionContext.ExecuteNonQuery(scriptText);
+
+                RunSqlCommand(scriptText);
 
                 if (!minimalLogging)
                 {
@@ -59,7 +65,7 @@ namespace squittal.ScrimPlanetmans.Services
 
                 string scriptText = scriptFileInfo.OpenText().ReadToEnd();
 
-                _server.ConnectionContext.ExecuteNonQuery(scriptText);
+                RunSqlCommand(scriptText);
 
                 info = $"Successfully ran sql script at {scriptPath}";
 
@@ -86,21 +92,39 @@ namespace squittal.ScrimPlanetmans.Services
 
             try
             {
-                var files = Directory.GetFiles(directoryPath);
+                var files = Directory.GetFiles(directoryPath)
+                    .Where(f => f.EndsWith(".sql"))
+                    .Order();
 
                 foreach (var file in files)
                 {
-                    if (!file.EndsWith(".sql"))
-                    {
-                        continue;
-                    }
-
                     RunSqlScript(file, true);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error running SQL scripts in directory {directoryName}: {ex}");
+            }
+        }
+
+        private void RunSqlCommand(string text)
+        {
+            using (SqlConnection connection = new(_config.GetConnectionString("PlanetmansDbContext")))
+            {
+                string[] commands = Regex.Split(text, @"^\s*GO\s*$",
+                    RegexOptions.Multiline | RegexOptions.IgnoreCase);
+
+                connection.Open();
+
+                foreach (string commandText in commands)
+                {
+                    if (string.IsNullOrWhiteSpace(commandText)) continue;
+
+                    using (SqlCommand command = new SqlCommand(commandText, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                }
             }
         }
     }
