@@ -346,7 +346,10 @@
             _isLoading = false;
             InvokeAsyncStateHasChanged();
 
-            await ConfigureRemoteMatchControlsAsync();
+            if (!MatchControlClient.IsConnected)
+            {
+                await ConfigureRemoteMatchControlsAsync();
+            }
         }
     }
 

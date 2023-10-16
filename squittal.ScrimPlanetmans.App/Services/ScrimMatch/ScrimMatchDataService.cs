@@ -139,7 +139,7 @@ namespace squittal.ScrimPlanetmans.Services.ScrimMatch
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.ToString());
+                    _logger.LogError(ex, "Error saving match round configuration.");
                 }
             }
         }
