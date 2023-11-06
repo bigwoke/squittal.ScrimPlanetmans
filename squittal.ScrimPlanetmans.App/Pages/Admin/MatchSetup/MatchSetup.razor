@@ -385,7 +385,8 @@
     {
         MatchControlClient.StartMatch(() =>
         {
-            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && ScrimMatchEngine.GetCurrentRound() == 0 && !_isChangingRuleset) || 
+                (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1))
             {
                 StartMatch();
             }
@@ -393,7 +394,7 @@
 
         MatchControlClient.Rematch(() =>
         {
-            if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1)
+            if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1)
             {
                 ClearMatch(true);
             }
@@ -401,7 +402,8 @@
 
         MatchControlClient.ClearMatch(() =>
         {
-            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && _currentRound == 0 && !_isChangingRuleset) || (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && _currentRound >= 1))
+            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && ScrimMatchEngine.GetCurrentRound() == 0 && !_isChangingRuleset) ||
+                (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1))
             {
                 ClearMatch(false);
             }
@@ -655,7 +657,7 @@
 
             _isRunning = ScrimMatchEngine.IsRunning();
             _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState();
+            _matchState = ScrimMatchEngine.GetMatchState(); 
 
             _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
 
