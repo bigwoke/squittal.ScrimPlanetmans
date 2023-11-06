@@ -735,7 +735,7 @@ No-Link Brand Header
             }
 
 .table-striped-light .multi-col-header {
-    background: var(--sq-bg-white-lit) !important;
+    /*background: var(--sq-bg-white-lit) !important;*/
     border-bottom: 1px solid var(--sq-pale-purple-alpha-a0);
     /*margin-bottom: 2px;*/
 }
