@@ -7,6 +7,7 @@ using squittal.ScrimPlanetmans.Models.Planetside;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace squittal.ScrimPlanetmans.Services.Planetside
         
         private ConcurrentDictionary<int, ItemCategory> WeaponCategoriesMap { get; set; } = new ConcurrentDictionary<int, ItemCategory>();
         private readonly SemaphoreSlim _weaponCategoryMapSetUpSemaphore = new SemaphoreSlim(1);
-        public string BackupSqlScriptFileName => "CensusBackups\\dbo.ItemCategory.Table.sql";
+        public string BackupSqlScriptFileName => Path.Combine("CensusBackups", "dbo.ItemCategory.Table.sql");
 
         public event EventHandler<StoreRefreshMessageEventArgs> RaiseStoreRefreshEvent;
         public delegate void StoreRefreshMessageEventHandler(object sender, StoreRefreshMessageEventArgs e);

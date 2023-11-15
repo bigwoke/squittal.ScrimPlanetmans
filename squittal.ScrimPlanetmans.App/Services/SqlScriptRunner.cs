@@ -13,7 +13,7 @@ namespace squittal.ScrimPlanetmans.Services
 {
     public class SqlScriptRunner : ISqlScriptRunner
     {
-        private readonly string _sqlDirectory = "Data\\SQL";
+        private readonly string _sqlDirectory = Path.Combine("Data", "SQL");
         private readonly string _basePath;
         private readonly string _scriptDirectory;
         private readonly string _adhocScriptDirectory;
@@ -29,7 +29,7 @@ namespace squittal.ScrimPlanetmans.Services
             _basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
             _scriptDirectory = Path.Combine(_basePath, _sqlDirectory);
 
-            _adhocScriptDirectory = Path.GetFullPath(Path.Combine(_basePath, "..", "..", "..", "..\\sql_adhoc"));
+            _adhocScriptDirectory = Path.GetFullPath(Path.Combine(_basePath, "..", "..", "..", "..", "sql_adhoc"));
         }
 
         public void RunSqlScript(string fileName, bool minimalLogging = false)

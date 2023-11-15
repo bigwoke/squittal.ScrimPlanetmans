@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System;
 using System.Threading;
+using System.IO;
 
 namespace squittal.ScrimPlanetmans.Services.Planetside
 {
@@ -23,7 +24,7 @@ namespace squittal.ScrimPlanetmans.Services.Planetside
         private ConcurrentDictionary<int, World> WorldsMap { get; set; } = new ConcurrentDictionary<int, World>();
         private readonly SemaphoreSlim _mapSetUpSemaphore = new SemaphoreSlim(1);
 
-        public string BackupSqlScriptFileName => "CensusBackups\\dbo.World.Table.sql";
+        public string BackupSqlScriptFileName => Path.Combine("CensusBackups", "dbo.World.Table.sql");
 
 
         public WorldService(IDbContextHelper dbContextHelper, CensusWorld censusWorld, ISqlScriptRunner sqlScriptRunner, ILogger<ProfileService> logger)

@@ -14,9 +14,11 @@ namespace squittal.ScrimPlanetmans.Logging
         public async static Task<bool> WriteToJsonFile(string fileName, JsonRuleset ruleset)
         {
             var basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
-            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..\\rulesets"));
+            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "rulesets"));
 
-            var path = fileName.EndsWith(".json") ? $"{rulesetsDirectory}\\{fileName}" : $"{rulesetsDirectory}\\{fileName}.json";
+            var path = fileName.EndsWith(".json") 
+                ? Path.Combine(rulesetsDirectory, fileName) 
+                : Path.Combine(rulesetsDirectory, $"{fileName}.json");
 
             try
             {
@@ -41,9 +43,11 @@ namespace squittal.ScrimPlanetmans.Logging
         public async static Task<JsonRuleset> ReadFromJsonFile(string fileName)
         {
             var basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
-            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..\\rulesets"));
+            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "rulesets"));
 
-            var path = fileName.EndsWith(".json") ? $"{rulesetsDirectory}\\{fileName}" : $"{rulesetsDirectory}\\{fileName}.json";
+            var path = fileName.EndsWith(".json") 
+                ? Path.Combine(rulesetsDirectory, fileName) 
+                : Path.Combine(rulesetsDirectory, $"{fileName}.json");
 
             try
             {
@@ -65,7 +69,7 @@ namespace squittal.ScrimPlanetmans.Logging
         public static IEnumerable<string> GetJsonRulesetFileNames()
         {
             var basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
-            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..\\rulesets"));
+            var rulesetsDirectory = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "rulesets"));
 
             var rulesets = new List<string>();
 

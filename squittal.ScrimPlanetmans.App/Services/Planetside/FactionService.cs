@@ -5,6 +5,7 @@ using squittal.ScrimPlanetmans.CensusServices.Models;
 using squittal.ScrimPlanetmans.Data;
 using squittal.ScrimPlanetmans.Models.Planetside;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace squittal.ScrimPlanetmans.Services.Planetside
         private readonly ISqlScriptRunner _sqlScriptRunner;
         private readonly ILogger<FactionService> _logger;
 
-        public string BackupSqlScriptFileName => "CensusBackups\\dbo.Faction.Table.sql";
+        public string BackupSqlScriptFileName => Path.Combine("CensusBackups", "dbo.Faction.Table.sql");
 
 
         public FactionService(IDbContextHelper dbContextHelper, CensusFaction censusFaction, ISqlScriptRunner sqlScriptRunner, ILogger<FactionService> logger)

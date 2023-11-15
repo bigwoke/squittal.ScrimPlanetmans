@@ -7,6 +7,7 @@ using squittal.ScrimPlanetmans.Models.Planetside;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace squittal.ScrimPlanetmans.Services.Planetside
         private ConcurrentDictionary<int, MapRegion> ScrimmableFacilityMapRegionsMap { get; set; } = new ConcurrentDictionary<int, MapRegion>();
         private readonly SemaphoreSlim _mapSetUpSemaphore = new SemaphoreSlim(1);
 
-        public string BackupSqlScriptFileName => "CensusBackups\\dbo.MapRegion.Table.sql";
+        public string BackupSqlScriptFileName => Path.Combine("CensusBackups", "dbo.MapRegion.Table.sql");
 
         public FacilityService(IDbContextHelper dbContextHelper, CensusFacility censusFacility, ISqlScriptRunner sqlScriptRunner, ILogger<FacilityService> logger)
         {
