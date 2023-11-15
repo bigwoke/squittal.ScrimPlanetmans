@@ -58,8 +58,7 @@ namespace squittal.ScrimPlanetmans.App
                         .EnableSensitiveDataLogging(false));
 
 
-            services.AddCensusServices(options =>
-                options.CensusServiceId = Environment.GetEnvironmentVariable("DaybreakGamesServiceKey", EnvironmentVariableTarget.User));
+            services.AddCensusServices(options => options.CensusServiceId = Configuration["DaybreakGamesServiceKey"]);
             services.AddCensusHelpers();
 
             services.AddSingleton<IDbContextHelper, DbContextHelper>();
