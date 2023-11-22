@@ -124,7 +124,7 @@
     private void UpdateAdHocSqlFileNames()
     {
         var fileNames = DbMaintenance.GetAdHocSqlFileNames();
-        _adhocSqlFiles = fileNames.ToList();
+        _adhocSqlFiles = fileNames?.ToList() ?? new List<string>();
     }
 
     private void TryRunSelectedAdHocSqlFile()
