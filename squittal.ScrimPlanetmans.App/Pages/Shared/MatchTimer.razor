@@ -4,8 +4,7 @@
 @using squittal.ScrimPlanetmans.ScrimMatch.Timers;
 @using squittal.ScrimPlanetmans.Services.ScrimMatch;
 
-@inject IStatefulTimer  Timer
-@inject IScrimMatchEngine ScrimMatchEngine
+@inject IJSRuntime JSRuntime
 @inject IScrimMessageBroadcastService MessageService
 
 @implements IDisposable
@@ -19,100 +18,61 @@ else
     <span>@_clock</span>
 }
 
-@if (_playSound)
-{
-    <audio autoplay><source src="/resources/buzzer1.wav" /></audio>
-}
+<script>
+    window.PlayTimerAudio = () => {
+        const audio = document.getElementById('timerAudio');
+        if (audio != null) {
+            const audioSrc = document.getElementById('timerAudioSource')
+            if (audioSrc != null) {
+                audio.load();
+                audio.play();
+            }
+        }
+    }
+</script>
+
+<audio id="timerAudio"><source id="timerAudioSource" src="/resources/buzzer1.wav" /></audio>
 
 @code {
     [Parameter]
     public bool Debug { get; set; } = false;
 
     private string _clock = "--:--";
-    //private MatchTimerState _clockStatus = MatchTimerState.Uninitialized;
     private TimerState _clockStatus = TimerState.Uninitialized;
     private string _clockStatusDisplay
     {
         get
         {
-            //return Enum.GetName(typeof(MatchTimerState), _clockStatus);
             return Enum.GetName(typeof(TimerState), _clockStatus);
         }
     }
 
-    bool _playSound = false;
-    bool _playedSound = false;
-    bool _canPlaySound = false;
-
     #region Initialization Methods
+
     protected override void OnInitialized()
     {
-        _canPlaySound = false;
-
-        //Timer.RaiseMatchTimerTickEvent += ReceiveMatchTimerTickEvent;
         MessageService.RaiseMatchTimerTickEvent += ReceiveMatchTimerTickEvent;
-
-        var prevTick = ScrimMatchEngine.GetLatestTimerTickMessage();
-
-        if (prevTick != null)
-        {
-            //_clock = prevTick.MatchTimerStatus.TimeRemainingDisplay;
-            _clock = prevTick.TimerDisplay;
-
-            //if (prevTick.MatchTimerStatus.GetSecondsRemaining() > 0)
-            //{
-            //    _canPlaySound = true;
-            //    _playedSound = false;
-            //}
-
-            if (prevTick.SecondsRemaining.HasValue && prevTick.SecondsRemaining.Value > 0)
-            {
-                _canPlaySound = true;
-                _playedSound = false;
-            }
-
-        }
-        else
-        {
-            _canPlaySound = true;
-        }
     }
 
     public void Dispose()
     {
         MessageService.RaiseMatchTimerTickEvent -= ReceiveMatchTimerTickEvent;
     }
+
     #endregion Initialization Methods
 
     private void ReceiveMatchTimerTickEvent(object sender, ScrimMessageEventArgs<MatchTimerTickMessage> e)
     {
-        var message = e.Message;
+        MatchTimerTickMessage timer = e.Message;
 
-        //var status = message.MatchTimerStatus;
-
-        //var state = status.State;
-        //var state = message.State;
-
-        //if (status.GetSecondsRemaining() == 0)
-        if (message.SecondsRemaining.HasValue && message.SecondsRemaining.Value == 0)
+        if (timer.State == TimerState.Stopped)
         {
-            _playSound = (!_playedSound && _canPlaySound) ? true : false;
-            _playedSound = true;
-        }
-        else
-        {
-            _playedSound = false;
-            _canPlaySound = true;
-            _playSound = false;
+            JSRuntime.InvokeVoidAsync("PlayTimerAudio");
         }
 
-        //_clock = status.TimeRemainingDisplay;
-        _clock = message.TimerDisplay;
-        _clockStatus = message.State;
+        _clock = timer.TimerDisplay;
+        _clockStatus = timer.State;
 
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        InvokeAsync(StateHasChanged);
     }
 }
