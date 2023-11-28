@@ -8,7 +8,7 @@ using squittal.ScrimPlanetmans.Services.ScrimMatch;
 
 namespace squittal.ScrimPlanetmans.App.Services
 {
-    public class InterprocessService : IHostedService
+    public class InterprocessService
     {
         private readonly IScrimMessageBroadcastService _messageService;
         private readonly IHubContext<MatchDataHub, IMatchDataHub> _dataHubContext;

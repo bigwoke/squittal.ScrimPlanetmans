@@ -121,7 +121,8 @@ namespace squittal.ScrimPlanetmans.App
 
             services.AddTransient<DatabaseMaintenanceService>();
 
-            services.AddHostedService<InterprocessService>();
+            services.AddSingleton<InterprocessService>();
+            services.AddHostedService<InterprocessServiceStarter>();
             services.AddScoped<IMatchControlClient, MatchControlClient>();
         }
 
