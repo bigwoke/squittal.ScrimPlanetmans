@@ -345,13 +345,8 @@
 
             _isLoading = false;
             InvokeAsyncStateHasChanged();
-
-            if (!MatchControlClient.IsConnected)
-            {
-                await ConfigureRemoteMatchControlsAsync();
             }
         }
-    }
 
     protected override void OnInitialized()
     {
@@ -379,65 +374,6 @@
         _currentRound = ScrimMatchEngine.GetCurrentRound();
         _matchState = ScrimMatchEngine.GetMatchState();
         _matchId = ScrimMatchEngine.GetMatchId();
-    }
-
-    private async Task ConfigureRemoteMatchControlsAsync()
-    {
-        MatchControlClient.StartMatch(() =>
-        {
-            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && ScrimMatchEngine.GetCurrentRound() == 0 && !_isChangingRuleset) || 
-                (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1))
-            {
-                StartMatch();
-            }
-        });
-
-        MatchControlClient.Rematch(() =>
-        {
-            if (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1)
-            {
-                ClearMatch(true);
-            }
-        });
-
-        MatchControlClient.ClearMatch(() =>
-        {
-            if ((ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized && ScrimMatchEngine.GetCurrentRound() == 0 && !_isChangingRuleset) ||
-                (ScrimMatchEngine.GetMatchState() == MatchState.Stopped && ScrimMatchEngine.GetCurrentRound() >= 1))
-            {
-                ClearMatch(false);
-            }
-        });
-
-        MatchControlClient.PauseOrResumeRound(() =>
-        {
-            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
-            {
-                PauseRound();
-            }
-            else
-            {
-                ResumeRound();
-            }
-        });
-
-        MatchControlClient.EndRound(() =>
-        {
-            if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
-            {
-                EndRound();
-            }
-        });
-
-        MatchControlClient.ResetRound(() =>
-        {
-            if (_isDeleteDataEnabled)
-            {
-                ResetRound();
-            }
-        });
-
-        await MatchControlClient.StartAsync();
     }
 
     public void Dispose()
