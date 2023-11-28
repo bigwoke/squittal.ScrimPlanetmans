@@ -4,7 +4,6 @@
 
 @using squittal.ScrimPlanetmans.App.Pages.Shared;
 @using squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup.MatchTeamComposer;
-@using squittal.ScrimPlanetmans.App.SignalR.Clients;
 @using squittal.ScrimPlanetmans.CensusStream;
 @using squittal.ScrimPlanetmans.Models.Planetside;
 @using squittal.ScrimPlanetmans.Models.ScrimEngine
@@ -24,7 +23,6 @@
 @inject IZoneService ZoneService
 @inject IWorldService WorldService
 @inject IScrimRulesetManager RulesetManager
-@inject IMatchControlClient MatchControlClient
 
 @implements IDisposable
 
@@ -504,28 +502,18 @@
     #region Match Controls
     private async void StartMatch()
     {
-        if (_isStartingRound)
+        if (!_isStartingRound)
         {
-            return;
-        }
-
         _isStartingRound = true;
-
         InvokeAsyncStateHasChanged();
 
         ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
         await Task.Run(() => ScrimMatchEngine.Start());
 
-        _isRunning = ScrimMatchEngine.IsRunning();
-        _currentRound = ScrimMatchEngine.GetCurrentRound();
-        _matchState = ScrimMatchEngine.GetMatchState();
-
         _isDeleteDataEnabled = false;
-
         _isStartingRound = false;
-
         InvokeAsyncStateHasChanged();
+    }
     }
 
     private async void EndRound()
@@ -536,13 +524,7 @@
             InvokeAsyncStateHasChanged();
 
             await Task.Run(() => ScrimMatchEngine.EndRound());
-
-            _isRunning = ScrimMatchEngine.IsRunning();
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState();
-
             _isDeleteDataEnabled = false;
-
             _isEndingRound = false;
             InvokeAsyncStateHasChanged();
         }
@@ -553,13 +535,7 @@
         if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
         {
             ScrimMatchEngine.PauseRound();
-
-            _isRunning = ScrimMatchEngine.IsRunning();
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState();
-
             _isDeleteDataEnabled = false;
-
             InvokeAsyncStateHasChanged();
         }
     }
@@ -569,13 +545,7 @@
         if (ScrimMatchEngine.GetMatchState() == MatchState.Paused)
         {
             ScrimMatchEngine.ResumeRound();
-
-            _isRunning = ScrimMatchEngine.IsRunning();
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState();
-
             _isDeleteDataEnabled = false;
-
             InvokeAsyncStateHasChanged();
         }
     }
@@ -586,22 +556,15 @@
         {
             _isClearingMatch = true;
             _isDeleteDataEnabled = false;
-
             InvokeAsyncStateHasChanged();
 
             await Task.Run(() => ScrimMatchEngine.ClearMatch(isRematch));
 
-            _isRunning = ScrimMatchEngine.IsRunning();
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState(); 
-
             _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
-
             _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
             _matchConfiguration.Title = (_activeRuleset.DefaultMatchTitle == null) ? string.Empty : _activeRuleset.DefaultMatchTitle;
 
             _isClearingMatch = false;
-
             InvokeAsyncStateHasChanged();
         }
         else
@@ -617,17 +580,10 @@
         {
             _isResettingRound = true;
             _isDeleteDataEnabled = false;
-
             InvokeAsyncStateHasChanged();
 
             await Task.Run(() => ScrimMatchEngine.ResetRound());
-
-            _isRunning = ScrimMatchEngine.IsRunning();
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-            _matchState = ScrimMatchEngine.GetMatchState();
-
             _isResettingRound = false;
-
             InvokeAsyncStateHasChanged();
         }
     }
