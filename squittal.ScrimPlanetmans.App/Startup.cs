@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using squittal.ScrimPlanetmans.App.Hubs;
 using squittal.ScrimPlanetmans.App.Services;
-using squittal.ScrimPlanetmans.App.SignalR.Clients;
 using squittal.ScrimPlanetmans.App.SignalR.Hubs;
 using squittal.ScrimPlanetmans.CensusServices;
 using squittal.ScrimPlanetmans.CensusStream;
@@ -123,7 +122,6 @@ namespace squittal.ScrimPlanetmans.App
 
             services.AddSingleton<InterprocessService>();
             services.AddHostedService<InterprocessServiceStarter>();
-            services.AddScoped<IMatchControlClient, MatchControlClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

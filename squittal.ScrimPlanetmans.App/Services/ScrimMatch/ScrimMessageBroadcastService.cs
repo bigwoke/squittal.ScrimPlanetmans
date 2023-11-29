@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using squittal.ScrimPlanetmans.Logging;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.ScrimMatch.Timers;
-using System;
-using System.Threading.Tasks;
 
 namespace squittal.ScrimPlanetmans.Services.ScrimMatch
 {
@@ -332,6 +332,21 @@ namespace squittal.ScrimPlanetmans.Services.ScrimMatch
         }
         #endregion Simple (string) Message
 
+        #region Interprocess
+        public event EventHandler<ScrimMessageEventArgs<MatchControlSignalReceiptMessage>> RaiseMatchControlSignalReceiptMessage;
+        public delegate void MatchControlSignalReceiptEventHandler(object sender, ScrimMessageEventArgs<MatchControlSignalReceiptMessage> e);
+
+        public void BroadcastMatchControlReceipt(MatchControlSignalReceiptMessage message)
+        {
+            OnRaiseMatchControlReceiptEvent(new ScrimMessageEventArgs<MatchControlSignalReceiptMessage>(message));
+
+            TrySaveToLogFile(message.Info);
+        }
+        protected virtual void OnRaiseMatchControlReceiptEvent(ScrimMessageEventArgs<MatchControlSignalReceiptMessage> e)
+        {
+            RaiseMatchControlSignalReceiptMessage?.Invoke(this, e);
+        }
+        #endregion Interprocess
 
         #region Team Player/Outfit/Constructed Team Changes
         public void BroadcastTeamPlayerChangeMessage(TeamPlayerChangeMessage message)

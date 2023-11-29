@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using squittal.ScrimPlanetmans.App.Services;
 
 namespace squittal.ScrimPlanetmans.App.Hubs
 {
@@ -15,11 +16,18 @@ namespace squittal.ScrimPlanetmans.App.Hubs
 
     public class MatchControlHub : Hub<IMatchControlHub>
     {
-        public Task StartMatch() => Clients.All.StartMatch();
-        public Task Rematch() => Clients.All.Rematch();
-        public Task ClearMatch() => Clients.All.ClearMatch();
-        public Task PauseOrResumeRound() => Clients.All.PauseOrResumeRound();
-        public Task EndRound() => Clients.All.EndRound();
-        public Task ResetRound() => Clients.All.ResetRound();
+        private readonly InterprocessService _ipcService;
+
+        public MatchControlHub(InterprocessService ipcService)
+        {
+            _ipcService = ipcService;
+        }
+
+        public Task StartMatch() => _ipcService.ReceivedMatchControl(nameof(StartMatch));
+        public Task Rematch() => _ipcService.ReceivedMatchControl(nameof(Rematch));
+        public Task ClearMatch() => _ipcService.ReceivedMatchControl(nameof(ClearMatch));
+        public Task PauseOrResumeRound() => _ipcService.ReceivedMatchControl(nameof(PauseOrResumeRound));
+        public Task EndRound() => _ipcService.ReceivedMatchControl(nameof(EndRound));
+        public Task ResetRound() => _ipcService.ReceivedMatchControl(nameof(ResetRound));
     }
 }

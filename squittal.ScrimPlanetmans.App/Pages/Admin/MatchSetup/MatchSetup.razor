@@ -343,18 +343,20 @@
 
             _isLoading = false;
             InvokeAsyncStateHasChanged();
-            }
         }
+    }
 
     protected override void OnInitialized()
     {
         MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
         MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
         MessageService.RaiseRulesetSettingChangeEvent -= ReceiveRulesetSettingChangeEvent;
+        MessageService.RaiseMatchControlSignalReceiptMessage -= ReceiveMatchControlSignalReceiptMessage;
 
         MessageService.RaiseMatchStateUpdateEvent += ReceiveMatchStateUpdateMessageEvent;
         MessageService.RaiseMatchConfigurationUpdateEvent += ReceiveMatchConfigurationUpdateMessageEvent;
         MessageService.RaiseRulesetSettingChangeEvent += ReceiveRulesetSettingChangeEvent;
+        MessageService.RaiseMatchControlSignalReceiptMessage += ReceiveMatchControlSignalReceiptMessage;
 
         if (ScrimMatchEngine.MatchConfiguration != null)
         {
@@ -379,6 +381,7 @@
         MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
         MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
         MessageService.RaiseRulesetSettingChangeEvent -= ReceiveRulesetSettingChangeEvent;
+        MessageService.RaiseMatchControlSignalReceiptMessage -= ReceiveMatchControlSignalReceiptMessage;
     }
 
     private async Task SetUpRulesetsAsync()
@@ -489,7 +492,6 @@
     private void SubscribeToCensus()
     {
         ScrimMatchEngine.SubmitPlayersList();
-
         LogAdminMessage($"Subscribed all characters to Stream Monitor!");
     }
 
@@ -504,16 +506,16 @@
     {
         if (!_isStartingRound)
         {
-        _isStartingRound = true;
-        InvokeAsyncStateHasChanged();
+            _isStartingRound = true;
+            InvokeAsyncStateHasChanged();
 
-        ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-        await Task.Run(() => ScrimMatchEngine.Start());
+            ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
+            await Task.Run(() => ScrimMatchEngine.Start());
 
-        _isDeleteDataEnabled = false;
-        _isStartingRound = false;
-        InvokeAsyncStateHasChanged();
-    }
+            _isDeleteDataEnabled = false;
+            _isStartingRound = false;
+            InvokeAsyncStateHasChanged();
+        }
     }
 
     private async void EndRound()
@@ -536,7 +538,7 @@
         {
             ScrimMatchEngine.PauseRound();
             _isDeleteDataEnabled = false;
-            InvokeAsyncStateHasChanged();
+            InvokeAsyncStateHasChanged();            
         }
     }
 
@@ -766,6 +768,21 @@
 
         if (success)
         {
+            InvokeAsyncStateHasChanged();
+        }
+    }
+
+    private void ReceiveMatchControlSignalReceiptMessage(object sender, ScrimMessageEventArgs<MatchControlSignalReceiptMessage> e)
+    {
+        _isDeleteDataEnabled = false;
+        InvokeAsyncStateHasChanged();
+
+        if (e.Message.Signal == "Rematch" || e.Message.Signal == "ClearMatch")
+        {
+            _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
+            _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
+            _matchConfiguration.Title = (_activeRuleset.DefaultMatchTitle == null) ? string.Empty : _activeRuleset.DefaultMatchTitle;
+
             InvokeAsyncStateHasChanged();
         }
     }

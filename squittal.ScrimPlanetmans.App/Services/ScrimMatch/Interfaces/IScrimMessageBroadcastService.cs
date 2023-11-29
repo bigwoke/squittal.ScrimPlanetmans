@@ -1,6 +1,6 @@
-﻿using squittal.ScrimPlanetmans.ScrimMatch.Messages;
+﻿using System;
+using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.ScrimMatch.Timers;
-using System;
 
 namespace squittal.ScrimPlanetmans.Services.ScrimMatch
 {
@@ -53,7 +53,7 @@ namespace squittal.ScrimPlanetmans.Services.ScrimMatch
         event EventHandler<ScrimMessageEventArgs<RulesetRuleChangeMessage>> RaiseRulesetRuleChangeEvent;
         
         event EventHandler<ScrimMessageEventArgs<EndRoundCheckerMessage>> RaiseEndRoundCheckerMessage;
-
+        event EventHandler<ScrimMessageEventArgs<MatchControlSignalReceiptMessage>> RaiseMatchControlSignalReceiptMessage;
 
         void BroadcastSimpleMessage(string message);
 
@@ -95,6 +95,6 @@ namespace squittal.ScrimPlanetmans.Services.ScrimMatch
         void BroadcastRulesetRuleChangeMessage(RulesetRuleChangeMessage message);
         
         void BroadcastEndRoundCheckerMessage(EndRoundCheckerMessage message);
-
+        void BroadcastMatchControlReceipt(MatchControlSignalReceiptMessage message);
     }
 }
