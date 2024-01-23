@@ -19,7 +19,7 @@ namespace squittal.ScrimPlanetmans.App.Services
 
         public TimeZoneInfo TimeZone { get; private set; } = TimeZoneInfo.Utc;
 
-        public DateTimeOffset LocalNow => Localize(DateTime.Now);
+        public DateTimeOffset LocalNow => Localize(DateTime.UtcNow);
 
         public DateTimeOffset Localize(DateTime dateTime)
             => TimeZoneInfo.ConvertTime(dateTime, TimeZone);

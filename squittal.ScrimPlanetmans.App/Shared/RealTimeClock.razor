@@ -1,51 +1,31 @@
 ﻿@using System.Threading;
+@using squittal.ScrimPlanetmans.App.Services;
+
 @implements IDisposable
 
-<div class="header-clock">@_renderedTimeString UTC</div>
+@inject TimeZoneService TZService
+
+<div class="header-clock">@_localClockString (Local) &nbsp;|&nbsp; @_utcClockString (UTC)</div>
 
 @code {
-    private string _renderedTimeString { get; set; }
-
-    private Timer _timer { get; set; }
+    private Timer _timer;
+    private string _localClockString = string.Empty;
+    private string _utcClockString = string.Empty;
 
     protected override void OnInitialized()
     {
-        _timer = new Timer(HandleTimerTick, null, 0, 1000);
+        UpdateClock();
 
-        SetClockDisplay();
+        _timer = new Timer(_ => UpdateClock(), null, 0, 1000);
     }
 
-    public void Dispose()
+    private void UpdateClock()
     {
-        _timer.Dispose();
+        _localClockString = $"{TZService.LocalNow:MMM d, HH:mm:ss}";
+        _utcClockString = $"{DateTime.UtcNow:MMM d, HH:mm:ss}";
+
+        InvokeAsync(StateHasChanged);
     }
 
-    #region Timer Handling
-    private void InitializeTimer()
-    {
-        _timer = new Timer(HandleTimerTick, null, 0, 1000);
-    }
-
-    private void HandleTimerTick(object stateInfo)
-    {
-        SetClockDisplay();
-
-        InvokeAsyncStateHasChanged();
-    }
-    #endregion Timer Handling
-
-    private void SetClockDisplay()
-    {
-        var utcNow = DateTime.UtcNow;
-
-        _renderedTimeString = utcNow.ToString("MMM d, HH:mm:ss");
-    }
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
+    public void Dispose() => _timer.Dispose();
 }
