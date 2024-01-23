@@ -2,6 +2,7 @@
 @page "/Rulesets"
 
 @using squittal.ScrimPlanetmans.App.Pages.Shared;
+@using squittal.ScrimPlanetmans.App.Services
 @using squittal.ScrimPlanetmans.ScrimMatch; 
 @using squittal.ScrimPlanetmans.ScrimMatch.Models;
 @using squittal.ScrimPlanetmans.Services.Rulesets;
@@ -11,6 +12,7 @@
 @inject IRulesetDataService RulesetDataService 
 @inject IScrimRulesetManager RulesetManager
 @inject NavigationManager NavManager
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -181,8 +183,8 @@
                                     }
 
                                     <td>@ruleset.Name <span style="color: var(--sq-gray);">[@ruleset.Id]</span></td>
-                                    <td>@GetLocalizedDateTimeString(ruleset.DateCreated)</td>
-                                    <td>@(ruleset.DateLastModified != null ? $"{GetLocalizedDateTimeString((DateTime)ruleset.DateLastModified)}" : "--")</td>
+                                    <td>@($"{GetLocalizedDTO(ruleset.DateCreated):g}")</td>
+                                    <td>@(ruleset.DateLastModified != null ? $"{GetLocalizedDTO((DateTime)ruleset.DateLastModified):g}" : "--")</td>
                                     @*<td>
                                         <NavLink class="nav-link" href=@($"ruleset/{ruleset.Id}?edit=false") target="_self" style="padding: 4px 8px;">View<span class="oi oi-external-link" style="padding-left: 8px; font-size: 0.7rem;"></span></NavLink>
                                     </td>*@
@@ -574,13 +576,10 @@
         return rulesetId == RulesetDataService.CustomDefaultRulesetId;
     }
 
-    private string GetLocalizedDateTimeString(DateTime dateTime)
+    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
     {
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("g")}";
+        return TZService.Localize(dateTime);
     }
 
     private void InvokeAsyncStateHasChanged()

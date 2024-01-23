@@ -1,10 +1,12 @@
-﻿@using squittal.ScrimPlanetmans.Models.MessageLogs;
+﻿@using squittal.ScrimPlanetmans.App.Services
+@using squittal.ScrimPlanetmans.Models.MessageLogs;
 @using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 @using squittal.ScrimPlanetmans.ScrimMatch.Models;
 @using squittal.ScrimPlanetmans.Services.ScrimMatch;
 @using System.Collections.Concurrent;
 
 @inject IScrimMessageBroadcastService MessageService
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -133,25 +135,10 @@
             return;
         }
 
-        var time = GetLocalizedTimeString(timestamp);
-
-        var newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{time}:</span>  {message}";
-
-        _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
-
-        UpdatePage();
-    }
-
-    private void LogMessage(string message)
-    {
-        var timestamp = DateTime.Now;
-
-        var time = GetLocalizedTimeString(timestamp);
-
-        var newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{time}:</span>  {message}";
+        DateTimeOffset local = GetLocalizedDTO(timestamp);
+        MarkupString newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{local:hh:mm:ss tt}:</span>  {message}";
 
         _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
-
         UpdatePage();
     }
 
@@ -177,12 +164,9 @@
         });
     }
 
-    private string GetLocalizedTimeString(DateTime dateTime)
+    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
     {
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("hh:mm:ss tt")}";
+        return TZService.Localize(dateTime);
     }
 }

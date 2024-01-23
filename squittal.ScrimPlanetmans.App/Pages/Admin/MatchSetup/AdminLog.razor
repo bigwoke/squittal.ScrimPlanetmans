@@ -1,10 +1,12 @@
 ﻿@using Newtonsoft.Json.Linq;
+@using squittal.ScrimPlanetmans.App.Services
 @using squittal.ScrimPlanetmans.Models.MessageLogs;
 @using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 @using squittal.ScrimPlanetmans.Services.ScrimMatch;
 @using System.Collections.Concurrent;
 
 @inject IScrimMessageBroadcastService MessageService
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -67,7 +69,7 @@
         var payload = TryParseMessagePayload(message);
         if (payload == null)
         {
-            LogMessage((MarkupString)message, e.CreatedTime);
+            LogMessage(message, e.CreatedTime);
             return;
         }
     }
@@ -75,43 +77,43 @@
     private void ReceiveMatchStateUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceivePlayerLoginEvent(object sender, ScrimMessageEventArgs<PlayerLoginMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceivePlayerLogoutEvent(object sender, ScrimMessageEventArgs<PlayerLogoutMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceiveTeamPlayerChangeEvent(object sender, ScrimMessageEventArgs<TeamPlayerChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceiveTeamOutfitChangeEvent(object sender, ScrimMessageEventArgs<TeamOutfitChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceiveTeamConstructedTeamChangeEvent(object sender, ScrimMessageEventArgs<TeamConstructedTeamChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
 
     private void ReceivePlayerNameDisplayChangeMessageEvent(object sender, ScrimMessageEventArgs<PlayerNameDisplayChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage((MarkupString)info, e.CreatedTime);
+        LogMessage(info, e.CreatedTime);
     }
     #endregion
 
@@ -138,27 +140,12 @@
     }
     #endregion Message Parsing
 
-    private void LogMessage(MarkupString message, DateTime timestamp)
+    private void LogMessage(string message, DateTime timestamp)
     {
-        var time = GetLocalizedTimeString(timestamp);
-
-        var newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{time}:</span>  {message}";
+        DateTimeOffset local = GetLocalizedDTO(timestamp);
+        MarkupString newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{local:hh:mm:ss tt}:</span>  {message}";
 
         _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
-
-        UpdatePage();
-    }
-
-    private void LogMessage(string message)
-    {
-        var timestamp = DateTime.Now;
-
-        var time = GetLocalizedTimeString(timestamp);
-
-        var newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{time}:</span>  {message}";
-
-        _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
-
         UpdatePage();
     }
 
@@ -176,7 +163,7 @@
                 }
 
                 _logCount = _adminLogMessages.Count();
-                
+
                 _adminLogMessages = _adminLogMessages.OrderByDescending(m => m.Timestamp).Take(_maxLogCount).ToList();
 
                 StateHasChanged();
@@ -184,12 +171,9 @@
         });
     }
 
-    private string GetLocalizedTimeString(DateTime dateTime)
+    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
     {
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("hh:mm:ss tt")}";
+        return TZService.Localize(dateTime);
     }
 }

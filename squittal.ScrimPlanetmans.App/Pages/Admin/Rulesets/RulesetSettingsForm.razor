@@ -620,15 +620,6 @@
         return RulesetDataService.ActiveRulesetId == rulesetId;
     }
 
-    private string GetLocalizedDateTimeString(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("f")}";
-    }
-
     private string GetOverlayStatsDisplayString(OverlayStatsDisplayType statsType)
     {
         var rawString = Enum.GetName(typeof(OverlayStatsDisplayType), statsType);

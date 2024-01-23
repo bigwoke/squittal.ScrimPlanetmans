@@ -1,4 +1,5 @@
 ﻿@using squittal.ScrimPlanetmans.App.Pages.Shared;
+@using squittal.ScrimPlanetmans.App.Services
 @using squittal.ScrimPlanetmans.Models.Forms;
 @using squittal.ScrimPlanetmans.ScrimMatch;
 @using squittal.ScrimPlanetmans.ScrimMatch.Models;
@@ -13,6 +14,7 @@
 @inject IRulesetDataService RulesetDataService
 @inject IScrimMessageBroadcastService MessageService
 @inject NavigationManager NavManager
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -20,8 +22,7 @@
 
     @if (_renderedRuleset == null)
     {
-        <h5>Ruleset Viewer</h5>
-        <SpinnerEllipsis />
+        <h5>Ruleset Viewer</h5>        <SpinnerEllipsis />
     }
     else
     {
@@ -55,13 +56,13 @@
 
                     <p style="margin-bottom: 0px; font-size: smaller;">
                         <span style="padding-right: 8px; color: var(--sq-gray); display: inline-block; width: 96px;">Created: </span>
-                        <span style="margin-bottom: 0px; text-align: left;">@GetLocalizedDateTimeString(_renderedRuleset.DateCreated)</span>
+                        <span style="margin-bottom: 0px; text-align: left;">@($"{GetLocalizedDTO(_renderedRuleset.DateCreated):f}")</span>
                     </p>
 
                     <p style="margin-bottom: 0px; font-size: smaller;">
                         <span style="padding-right: 8px; color: var(--sq-gray); display: inline-block; width: 96px;">Last Modified: </span>
                         <span style="margin-bottom: 0px; text-align: left;">
-                            @(_renderedLastModifiedDateTime != null ? (GetLocalizedDateTimeString((DateTime)_renderedLastModifiedDateTime)) : "--")
+                            @(_renderedLastModifiedDateTime != null ? $"{GetLocalizedDTO((DateTime)_renderedLastModifiedDateTime):f}" : "--")
                         </span>
                     </p>
 
@@ -415,13 +416,10 @@
         return RulesetDataService.ActiveRulesetId == rulesetId;
     }
 
-    private string GetLocalizedDateTimeString(DateTime dateTime)
+    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
     {
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("f")}";
+        return TZService.Localize(dateTime);
     }
 
     private string GetOverlayStatsDisplayString(OverlayStatsDisplayType statsType)
