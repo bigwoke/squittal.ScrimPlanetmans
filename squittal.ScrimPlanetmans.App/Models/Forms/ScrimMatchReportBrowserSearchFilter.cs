@@ -8,76 +8,107 @@ namespace squittal.ScrimPlanetmans.Models.Forms
 {
     public class ScrimMatchReportBrowserSearchFilter
     {
-        public DateTime? SearchStartDate { get; set; } = _defaultSearchStartDate; // new DateTime(2012,11, 20); // PlanetSide 2 release date
-        public DateTime? SearchEndDate { get; set; } = _defaultSearchEndDate; //DateTime.UtcNow.AddDays(1);
+        private static readonly Regex _teamAliasRegex = new("^[A-Za-z0-9]{1,4}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public int RulesetId { get => GetRulesetIdFromString(); }
-        public string RulesetIdString { get; set; } = _defaultRulesetIdString;
+        private string _searchInput = string.Empty;
+        private int _rulesetId = 0; // Any
+        private int _worldId = 19; // Jaeger
+        private int _facilityId = 0; // Any
+        private DateTime _searchStartDate = new DateTime(2012, 11, 20); // PlanetSide 2 release date
+        private DateTime _searchEndDate = DateTime.UtcNow.AddDays(1); // Day after object creation
+        private int _minRounds = 2; // 2+ rounds
+        private bool _isDefaultFilter = true;
 
-        public int WorldId { get => GetWorldIdFromString(); }
-        public string WorldIdString { get; set; } = _defaultSearchWorldIdString; //"19";
+        public string SearchInput
+        {
+            get => _searchInput;
+            set
+            {
+                _searchInput = value;
+                _isDefaultFilter = false;
+            }
+        }
 
-        public int FacilityId { get => GetFacilityIdFromString(); }
-        public string FacilityIdString { get; set; } = _defaultSearchFacilityIdString; //"0";
-        
-        public int MinimumRoundCount { get; set; } = _defaultSearchMinimumRoundCount; //2;
+        public int RulesetId
+        {
+            get => _rulesetId;
+            set
+            {
+                _rulesetId = value;
+                _isDefaultFilter = false;
+            }
+        }
 
-        public string InputSearchTerms { get; set; } = _defaultSearchInputTerms; // string.Empty;
+        public int WorldId
+        {
+            get => _worldId;
+            set
+            {
+                _worldId = value;
+                _isDefaultFilter = false;
+            }
+        }
+
+        public int FacilityId
+        {
+            get => _facilityId;
+            set
+            {
+                _facilityId = value;
+                _isDefaultFilter = false;
+            }
+        }
+
+        public DateTime SearchStartDate
+        {
+            get => _searchStartDate;
+            set
+            {
+                _searchStartDate = value;
+                _isDefaultFilter = false;
+            }
+        }
+
+        public DateTime SearchEndDate
+        {
+            get => _searchEndDate;
+            set
+            {
+                _searchEndDate = value;
+                _isDefaultFilter = false;
+            }
+        }
+
+        public int MinimumRoundCount
+        {
+            get => _minRounds;
+            set
+            {
+                _minRounds = value;
+                _isDefaultFilter = false;
+            }
+        }
+
+        public bool IsDefaultFilter => _isDefaultFilter;
 
         public List<string> SearchTermsList { get; private set; } = new List<string>();
         public List<string> AliasSearchTermsList { get; private set; } = new List<string>();
 
-        private readonly AutoResetEvent _searchTermsAutoEvent = new AutoResetEvent(true);
-        private readonly AutoResetEvent _worldAutoEvent = new AutoResetEvent(true);
-        private readonly AutoResetEvent _facilityAutoEvent = new AutoResetEvent(true);
-        private readonly AutoResetEvent _rulesetAutoEvent = new AutoResetEvent(true);
-
-        private static readonly DateTime _defaultSearchStartDate = new DateTime(2012, 11, 20); // PlanetSide 2 release date
-        private static readonly DateTime _defaultSearchEndDate = DateTime.UtcNow.AddDays(1);
-        private static readonly string _defaultSearchWorldIdString = "19"; // Jaeger
-        private static readonly string _defaultSearchFacilityIdString = "0"; // Any Facility
-        private static readonly int _defaultSearchMinimumRoundCount = 2;
-        private static readonly string _defaultSearchInputTerms = string.Empty;
-        private static readonly string _defaultRulesetIdString = "0"; // Any Ruleset
-        
-
-        public bool IsDefaultFilter => GetIsDefaultFilter();
-
-        private static Regex TeamAliasRegex { get; } = new Regex("^[A-Za-z0-9]{1,4}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        private bool GetIsDefaultFilter()
-        {
-            return MinimumRoundCount == _defaultSearchMinimumRoundCount
-                   && WorldIdString == _defaultSearchWorldIdString
-                   && FacilityIdString == _defaultSearchFacilityIdString
-                   && SearchStartDate == _defaultSearchStartDate && SearchEndDate == _defaultSearchEndDate
-                   && InputSearchTerms == _defaultSearchInputTerms
-                   && !SearchTermsList.Any() && !AliasSearchTermsList.Any()
-                   && RulesetIdString == _defaultRulesetIdString;
-        }
-
         public void ParseSearchTermsString()
         {
-            _searchTermsAutoEvent.WaitOne();
-
-            var searchTerms = InputSearchTerms;
-
             SearchTermsList = new List<string>();
             AliasSearchTermsList = new List<string>();
             
-            if (string.IsNullOrWhiteSpace(searchTerms))
+            if (string.IsNullOrWhiteSpace(_searchInput))
             {
-                _searchTermsAutoEvent.Set();
                 return;
             }
 
-            var splitTerms = searchTerms.Split(' ');
-
-            foreach (var term in splitTerms)
+            foreach (string term in _searchInput.Split(' '))
             {
-                var termLower = term.ToLower();
+                string termLower = term.ToLower();
 
-                if (TeamAliasRegex.Match(termLower).Success && !AliasSearchTermsList.Contains(termLower) && termLower != "vs" && termLower != "ps2")
+                if (_teamAliasRegex.Match(termLower).Success && !AliasSearchTermsList.Contains(termLower) && termLower != "vs" && termLower != "ps2")
                 {
                     AliasSearchTermsList.Add(termLower);
                 }
@@ -85,93 +116,6 @@ namespace squittal.ScrimPlanetmans.Models.Forms
                 {
                     SearchTermsList.Add(termLower);
                 }
-            }
-
-            _searchTermsAutoEvent.Set();
-        }
-
-        public bool SetWorldId(int worldId)
-        {
-            if (worldId <= -1)
-            {
-                return false;
-            }
-
-            SetWorldId(worldId.ToString());
-
-            return true;
-        }
-
-        public void SetWorldId(string worldIdString)
-        {
-            _worldAutoEvent.WaitOne();
-
-            WorldIdString = worldIdString;
-            _worldAutoEvent.Set();
-        }
-
-        public void SetRulesetId(string rulesetIdString)
-        {
-            _rulesetAutoEvent.WaitOne();
-
-            RulesetIdString = rulesetIdString;
-
-            _rulesetAutoEvent.Set();
-        }
-
-        public bool SetFacilityId(int facilityId)
-        {
-            if (facilityId <= 0)
-            {
-                return false;
-            }
-
-            SetFacilityId(facilityId.ToString());
-
-            return true;
-        }
-
-        public void SetFacilityId(string facilityIdString)
-        {
-            _facilityAutoEvent.WaitOne();
-
-            FacilityIdString = facilityIdString;
-            _facilityAutoEvent.Set();
-        }
-
-        private int GetFacilityIdFromString()
-        {
-            if (int.TryParse(FacilityIdString, out int intId))
-            {
-                return intId;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-
-        private int GetWorldIdFromString()
-        {
-            if (int.TryParse(WorldIdString, out int intId))
-            {
-                return intId;
-            }
-            else
-            {
-                return 19; // Default to Jaeger
-            }
-        }
-
-        private int GetRulesetIdFromString()
-        {
-            if (int.TryParse(RulesetIdString, out int intId))
-            {
-                return intId;
-            }
-            else
-            {
-                return 0; // Default to Any Ruleset
             }
         }
     }

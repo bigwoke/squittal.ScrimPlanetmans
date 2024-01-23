@@ -37,7 +37,7 @@
                         <DataAnnotationsValidator />
                         <ValidationSummary />
 
-                        <div style="display: inline-block; margin-bottom: 8px;">Search: <InputText id="inputTeamAlias" @bind-Value=@_searchFilter.InputSearchTerms maxlength="50" style="display: inline-block; width: 250px; margin-left: 4px;" /></div>
+                        <div style="display: inline-block; margin-bottom: 8px;">Search: <InputText id="inputTeamAlias" @bind-Value=@_searchFilter.SearchInput maxlength="50" style="display: inline-block; width: 250px; margin-left: 4px;" /></div>
 
                         <button type="submit" class="btn btn-primary">
                             <span class="oi oi-magnifying-glass"></span>Search
@@ -55,7 +55,7 @@
                             @if (_rulesets != null)
                             { 
                             <div style="margin-left: 0; margin-right: 16px; margin-bottom: 0.5rem; display: inline-block;">Ruleset: 
-                                <InputSelect TValue="string" style="width: 175px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.RulesetIdString" ValueChanged="@((string s) => _searchFilter.SetRulesetId(s))" ValueExpression="@(() => _searchFilter.RulesetIdString)">
+                                <InputSelect TValue="int" style="width: 175px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.RulesetId" ValueChanged="@((int i) => _searchFilter.RulesetId = i)" ValueExpression="@(() => _searchFilter.RulesetId)">
                                 <option value=@_anyRulesetIdValue>Any Ruleset</option>
 
                                     @foreach (var ruleset in _rulesets)
@@ -68,7 +68,7 @@
                             
                             @if (_worlds != null)
                             { 
-                                <InputSelect TValue="string" style="margin-left: 0; margin-right: 4px; width: 125px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.WorldIdString" ValueChanged="@((string s) => _searchFilter.SetWorldId(s))" ValueExpression="@(() => _searchFilter.WorldIdString)">
+                                <InputSelect TValue="int" style="margin-left: 0; margin-right: 4px; width: 125px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.WorldId" ValueChanged="@((int i) => _searchFilter.WorldId = i)" ValueExpression="@(() => _searchFilter.WorldId)">
                                     <option value=@_anyWorldIdValue>All Servers</option>
 
                                     @foreach (var world in _worlds)
@@ -78,7 +78,7 @@
                                 </InputSelect>
                             }
 
-                            <InputSelect TValue="string" style="margin-right: 16px; width: 175px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.FacilityIdString" ValueChanged="@((string s) => _searchFilter.SetFacilityId(s))" ValueExpression="@(() => _searchFilter.FacilityIdString)">
+                            <InputSelect TValue="int" style="margin-right: 16px; width: 175px; padding: 0.1rem; display: inline-block;" Value="@_searchFilter.FacilityId" ValueChanged="@((int i) => _searchFilter.FacilityId = i)" ValueExpression="@(() => _searchFilter.FacilityId)">
                                 <option value=@_anyFacilityIdValue>Any Facility</option>
                                 <option value=@_noFacilitIdFilterValue>No Filter</option>
 

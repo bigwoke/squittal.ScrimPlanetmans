@@ -96,19 +96,11 @@ namespace squittal.ScrimPlanetmans.Services.ScrimMatchReports
                 whereExpression = whereExpression == null ? roundExpression : whereExpression.And(roundExpression);
             }
 
-            if (searchFilter.SearchStartDate != null)
-            {
-                Expression<Func<ScrimMatchInfo, bool>> startDateExpression = m => m.StartTime >= searchFilter.SearchStartDate;
+            Expression<Func<ScrimMatchInfo, bool>> startDateExpression = m => m.StartTime >= searchFilter.SearchStartDate;
+            whereExpression = whereExpression == null ? startDateExpression : whereExpression.And(startDateExpression);
 
-                whereExpression = whereExpression == null ? startDateExpression : whereExpression.And(startDateExpression);
-            }
-
-            if (searchFilter.SearchEndDate != null)
-            {
-                Expression<Func<ScrimMatchInfo, bool>> endDateExpression = m => m.StartTime <= searchFilter.SearchEndDate;
-
-                whereExpression = whereExpression == null ? endDateExpression : whereExpression.And(endDateExpression);
-            }
+            Expression<Func<ScrimMatchInfo, bool>> endDateExpression = m => m.StartTime <= searchFilter.SearchEndDate;
+            whereExpression = whereExpression == null ? endDateExpression : whereExpression.And(endDateExpression);
 
             if (searchFilter.RulesetId != 0)
             {
