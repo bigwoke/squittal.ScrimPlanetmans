@@ -128,8 +128,11 @@
                             @foreach (var match in _storeScrimMatchList)
                             {
                                 <tr>
-                                    <td>@(GetLocalizedDTO(match.StartTime).ToString("ddd yyyy-MM-dd"))</td>
-                                    <td>@(GetLocalizedDTO(match.StartTime).ToString("h:mm tt"))</td>
+                                    @{
+                                        DateTimeOffset matchDate = GetLocalizedDTO(match.StartTime);
+                                    }
+                                    <td>@($"{matchDate:ddd} {matchDate:d}")</td>
+                                    <td>@($"{matchDate:t}")</td>
                                     @if (match.TeamOneFactionId <= 0)
                                     {
                                         <td style="color: var(--sq-black);">@match.TeamAliases[1]</td>
