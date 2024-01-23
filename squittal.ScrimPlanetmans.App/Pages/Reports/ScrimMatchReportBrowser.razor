@@ -4,6 +4,7 @@
 @page "/ScrimMatches"
 
 @using squittal.ScrimPlanetmans.App.Pages.Shared;
+@using squittal.ScrimPlanetmans.App.Services;
 @using squittal.ScrimPlanetmans.Models;
 @using squittal.ScrimPlanetmans.Models.Forms;
 @using squittal.ScrimPlanetmans.Models.Planetside;
@@ -19,6 +20,7 @@
 @inject IZoneService ZoneService
 @inject IWorldService WorldService
 @inject NavigationManager NavManager
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -107,8 +109,8 @@
                 <table style="width: 100%; border-bottom: 1px solid var(--sq-gray);" class="table-responsive-sm table-striped-light">
                     <thead>
                         <tr style="line-height: 1.2; font-size: 0.85rem; vertical-align: bottom; background-color: transparent; font-family: Roboto, 'Segoe UI', sans-serif; border-bottom: 1px solid var(--sq-gray);">
-                            <th style="font-weight: 300;">Date</th>
-                            <th style="font-weight: 300;">Start Time</th>
+                            <th style="font-weight: 300;">Date (Local)</th>
+                            <th style="font-weight: 300;">Time (Local)</th>
                             <th style="font-weight: 300;">Team 1</th>
                             <th style="font-weight: 300;">Team 2</th>
                             <th style="font-weight: 300;">Title</th>
@@ -126,8 +128,8 @@
                             @foreach (var match in _storeScrimMatchList)
                             {
                                 <tr>
-                                    <td>@GetLocalizedDateString(match.StartTime)</td>
-                                    <td>@GetLocalizedTimeString(match.StartTime)</td>
+                                    <td>@(GetLocalizedDTO(match.StartTime).ToString("ddd yyyy-MM-dd"))</td>
+                                    <td>@(GetLocalizedDTO(match.StartTime).ToString("h:mm tt"))</td>
                                     @if (match.TeamOneFactionId <= 0)
                                     {
                                         <td style="color: var(--sq-black);">@match.TeamAliases[1]</td>
@@ -534,31 +536,10 @@
         }
     }
 
-    private string GetLocalizedDateTimeString(DateTime dateTime)
+    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
     {
         dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("ddd")} {dateTimeLocal.ToString("g")}";
-    }
-
-    private string GetLocalizedDateString(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToString("ddd")} {dateTime.ToShortDateString()}";
-    }
-
-    private string GetLocalizedTimeString(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        var dateTimeLocal = dateTime.ToLocalTime();
-
-        return $"{dateTimeLocal.ToShortTimeString()}";
+        return TZService.Localize(dateTime);
     }
 
     private void InvokeAsyncStateHasChanged()
