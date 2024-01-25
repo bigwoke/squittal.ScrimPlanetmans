@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29609.76
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "squittal.ScrimPlanetmans.App", "squittal.ScrimPlanetmans.App\squittal.ScrimPlanetmans.App.csproj", "{A798102B-26A1-4AE2-AD93-AAECC02C52AD}"
 EndProject
