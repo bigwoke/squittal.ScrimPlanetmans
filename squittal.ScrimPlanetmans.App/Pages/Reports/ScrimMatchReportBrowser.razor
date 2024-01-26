@@ -127,12 +127,10 @@
                         <tbody style="@(_isLoadingScrimMatchList ? "opacity: 0.5;" : string.Empty)">
                             @foreach (var match in _storeScrimMatchList)
                             {
+                                DateTime startTime = DateTime.SpecifyKind(match.StartTime, DateTimeKind.Utc);
                                 <tr>
-                                    @{
-                                        DateTimeOffset matchDate = GetLocalizedDTO(match.StartTime);
-                                    }
-                                    <td>@($"{matchDate:ddd} {matchDate:d}")</td>
-                                    <td>@($"{matchDate:t}")</td>
+                                    <td><LocalDate Date="startTime" Format="ddd" /> <LocalDate Date="startTime" Format="d" /></td>
+                                    <td><LocalDate Date="startTime" Format="t" /></td>
                                     @if (match.TeamOneFactionId <= 0)
                                     {
                                         <td style="color: var(--sq-black);">@match.TeamAliases[1]</td>
@@ -537,12 +535,6 @@
         {
             return -1;
         }
-    }
-
-    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return TZService.Localize(dateTime);
     }
 
     private void InvokeAsyncStateHasChanged()
