@@ -218,7 +218,7 @@
                                     {
                                         <td>@adjustment.Rationale</td>
                                     }
-                                    <td>@adjustment.Timestamp.ToString("hh:mm:ss tt")</td>
+                                    <td><LocalDate Date="adjustment.Timestamp" Format="hh:mm:ss tt" /></td>
 
                                     <td style="width: 15px; text-align: right;">
                                         <button style="padding: 0; font-size: smaller; vertical-align: baseline; background-color: transparent; border: none;" @onclick="(() => HandlePointAdjustmentRemove(adjustment))" title="Remove Point Adjustment">
