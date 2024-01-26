@@ -1,0 +1,21 @@
+﻿@using System.Threading
+@using squittal.ScrimPlanetmans.App.Services
+@inject TimeZoneService TZService
+
+@Localized.ToString(Format)
+
+@code {
+	[Parameter, EditorRequired]
+	public DateTimeOffset Date { get; set; }
+
+	[Parameter]
+	public string Format { get; set; }
+
+	public DateTimeOffset Localized { get; private set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		Localized = await TZService.LocalizeAsync(Date);
+		await InvokeAsync(StateHasChanged);
+	}
+}
