@@ -62,58 +62,58 @@
     #endregion Initialization Methods
 
     #region  Event Handling
-    private void ReceiveSimpleMessageEvent(object sender, SimpleMessageEventArgs e)
+    private async void ReceiveSimpleMessageEvent(object sender, SimpleMessageEventArgs e)
     {
         var message = e.Message;
 
         var payload = TryParseMessagePayload(message);
         if (payload == null)
         {
-            LogMessage(message, e.CreatedTime);
+            await LogMessage(message, e.CreatedTime);
             return;
         }
     }
 
-    private void ReceiveMatchStateUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
+    private async void ReceiveMatchStateUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceivePlayerLoginEvent(object sender, ScrimMessageEventArgs<PlayerLoginMessage> e)
+    private async void ReceivePlayerLoginEvent(object sender, ScrimMessageEventArgs<PlayerLoginMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceivePlayerLogoutEvent(object sender, ScrimMessageEventArgs<PlayerLogoutMessage> e)
+    private async void ReceivePlayerLogoutEvent(object sender, ScrimMessageEventArgs<PlayerLogoutMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceiveTeamPlayerChangeEvent(object sender, ScrimMessageEventArgs<TeamPlayerChangeMessage> e)
+    private async void ReceiveTeamPlayerChangeEvent(object sender, ScrimMessageEventArgs<TeamPlayerChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceiveTeamOutfitChangeEvent(object sender, ScrimMessageEventArgs<TeamOutfitChangeMessage> e)
+    private async void ReceiveTeamOutfitChangeEvent(object sender, ScrimMessageEventArgs<TeamOutfitChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceiveTeamConstructedTeamChangeEvent(object sender, ScrimMessageEventArgs<TeamConstructedTeamChangeMessage> e)
+    private async void ReceiveTeamConstructedTeamChangeEvent(object sender, ScrimMessageEventArgs<TeamConstructedTeamChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
 
-    private void ReceivePlayerNameDisplayChangeMessageEvent(object sender, ScrimMessageEventArgs<PlayerNameDisplayChangeMessage> e)
+    private async void ReceivePlayerNameDisplayChangeMessageEvent(object sender, ScrimMessageEventArgs<PlayerNameDisplayChangeMessage> e)
     {
         var info = e.Message.Info;
-        LogMessage(info, e.CreatedTime);
+        await LogMessage(info, e.CreatedTime);
     }
     #endregion
 
@@ -140,9 +140,9 @@
     }
     #endregion Message Parsing
 
-    private void LogMessage(string message, DateTime timestamp)
+    private async Task LogMessage(string message, DateTime timestamp)
     {
-        DateTimeOffset local = GetLocalizedDTO(timestamp);
+        DateTimeOffset local = await TZService.LocalizeAsync(timestamp);
         MarkupString newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{local:hh:mm:ss tt}:</span>  {message}";
 
         _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
@@ -169,11 +169,5 @@
                 StateHasChanged();
             }
         });
-    }
-
-    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return TZService.Localize(dateTime);
     }
 }

@@ -71,71 +71,71 @@
     #endregion Initilization Methods
 
     #region  Event Handling
-    private void ReceiveDeathActionEvent(object sender, ScrimMessageEventArgs<ScrimDeathActionEventMessage> e)
+    private async void ReceiveDeathActionEvent(object sender, ScrimMessageEventArgs<ScrimDeathActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.DeathEvent.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
-    private void ReceiveVehicleDestructionActionEvent(object sender, ScrimMessageEventArgs<ScrimVehicleDestructionActionEventMessage> e)
+    private async void ReceiveVehicleDestructionActionEvent(object sender, ScrimMessageEventArgs<ScrimVehicleDestructionActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.DestructionEvent.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
-    private void ReceiveReviveActionEvent(object sender, ScrimMessageEventArgs<ScrimReviveActionEventMessage> e)
+    private async void ReceiveReviveActionEvent(object sender, ScrimMessageEventArgs<ScrimReviveActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.ReviveEvent.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
-    private void ReceiveAssistActionEvent(object sender, ScrimMessageEventArgs<ScrimAssistActionEventMessage> e)
+    private async void ReceiveAssistActionEvent(object sender, ScrimMessageEventArgs<ScrimAssistActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.AssistEvent.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
-    private void ReceiveObjectiveTickActionEvent(object sender, ScrimMessageEventArgs<ScrimObjectiveTickActionEventMessage> e)
+    private async void ReceiveObjectiveTickActionEvent(object sender, ScrimMessageEventArgs<ScrimObjectiveTickActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.ObjectiveTickEvent.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
-    private void ReceiveScrimFacilityControlActionEvent(object sender, ScrimMessageEventArgs<ScrimFacilityControlActionEventMessage> e)
+    private async void ReceiveScrimFacilityControlActionEvent(object sender, ScrimMessageEventArgs<ScrimFacilityControlActionEventMessage> e)
     {
         var message = e.Message;
 
         var isOutsideInterference = message.FacilityControl.ActionType == ScrimActionType.OutsideInterference;
 
-        LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
+        await LogMessage(message.GetLogLevelInfoMarkupString(), message.Timestamp, isOutsideInterference);
     }
 
 
     #endregion Event Handling
 
-    private void LogMessage(MarkupString message, DateTime timestamp, bool isOutsideInterference)
+    private async Task LogMessage(MarkupString message, DateTime timestamp, bool isOutsideInterference)
     {
         if (isOutsideInterference && !_displayOutsideInterferenceMessages)
         {
             return;
         }
 
-        DateTimeOffset local = GetLocalizedDTO(timestamp);
+        DateTimeOffset local = await TZService.LocalizeAsync(timestamp);
         MarkupString newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{local:hh:mm:ss tt}:</span>  {message}";
 
         _logMessageQueue.Enqueue(new TimestampedLogMessage(timestamp, newLogMessage));
@@ -162,11 +162,5 @@
                 StateHasChanged();
             }
         });
-    }
-
-    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return TZService.Localize(dateTime);
     }
 }

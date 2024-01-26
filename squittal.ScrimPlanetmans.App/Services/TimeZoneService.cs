@@ -5,37 +5,39 @@ using Microsoft.JSInterop;
 
 namespace squittal.ScrimPlanetmans.App.Services
 {
+#nullable enable
     public class TimeZoneService
     {
         public const string JS_FUNC_NAME = "getUserTimeZone";
-
+        
         private readonly IJSRuntime _jsRuntime;
 
         public TimeZoneService(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
-            Task.Run(SetTimeZone);
         }
 
-        public TimeZoneInfo TimeZone { get; private set; } = TimeZoneInfo.Utc;
+        public TimeZoneInfo? TimeZone { get; private set; }
 
-        public DateTimeOffset LocalNow => Localize(DateTime.UtcNow);
+        public async Task<DateTimeOffset> LocalizeAsync(DateTimeOffset dto)
+        {
+            TimeZone ??= await GetTimeZoneAsync();
+            return TimeZoneInfo.ConvertTime(dto, TimeZone);
+        }
 
-        public DateTimeOffset Localize(DateTime dateTime)
-            => TimeZoneInfo.ConvertTime(dateTime, TimeZone);
-
-        private async Task SetTimeZone()
+        private async Task<TimeZoneInfo> GetTimeZoneAsync()
         {
             string ianaTimeZone = await _jsRuntime.InvokeAsync<string>(JS_FUNC_NAME);
 
             try
             {
-                TimeZone = TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
+                return TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
             }
             catch (Exception ex) when (ex is TimeZoneNotFoundException or SecurityException or InvalidTimeZoneException)
             {
-                TimeZone = TimeZoneInfo.Utc;
+                return TimeZoneInfo.Utc;
             }
         }
     }
+#nullable disable
 }
