@@ -7,7 +7,7 @@ namespace squittal.ScrimPlanetmans.App.Services
 {
     public class TimeZoneService
     {
-        public const string JS_FUNC_NAME = "GetUserTimeZone";
+        public const string JS_FUNC_NAME = "getUserTimeZone";
 
         private readonly IJSRuntime _jsRuntime;
 
