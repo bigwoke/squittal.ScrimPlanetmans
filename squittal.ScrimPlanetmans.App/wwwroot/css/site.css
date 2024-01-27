@@ -238,6 +238,22 @@ app {
 
 ****************************/
 
+a[target="_blank"]:not(.external-icon)::after {
+    content: "";
+    display: inline-block;
+    margin: 0 0 0 0.3em;
+    width: .65em;
+    height: .65em;
+    background-color: currentColor;
+    --svg-oi-external-link: url('https://api.iconify.design/oi/external-link.svg');
+    mask-image: var(--svg-oi-external-link);
+    -webkit-mask-image: var(--svg-oi-external-link);
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+    -webkit-mask-size: 100% 100%
+}
+
 .mono-font {
     font-family: "Roboto Mono", "Input Mono", Consolas, monospace !important;
 }
@@ -518,7 +534,7 @@ No-Link Brand Header
     margin-bottom: 0.5rem;
 }
 
-    .nolink-header a {
+    .nolink-header a:not(.external-icon) {
         display: inline;
         vertical-align: text-top;
         padding: 0.5rem 1rem;
@@ -529,7 +545,7 @@ No-Link Brand Header
         border-bottom: 0px solid transparent;
     }
 
-        .nolink-header a:not(.external).active {
+        .nolink-header a:not(.external-icon):active {
             /*background-color: rgba(255,255,255,0.25);*/
             /*color: white;*/
             /*background-color: var(--sq-logo-purple);*/
@@ -542,7 +558,7 @@ No-Link Brand Header
             color: var(--pink);
         }
 
-        .nolink-header a:not(.external):hover {
+        .nolink-header a:not(.external-icon):hover {
             /*background-color: rgba(255,255,255,0.1);*/
             /*color: white;*/
             /*background-color: var(--sq-bg-white-unlit);
@@ -554,11 +570,7 @@ No-Link Brand Header
             border-bottom: 0px solid transparent;
         }
 
-        .nolink-header a.external {
-            /*position: absolute;
-            right: 0;
-            top: 0;
-            padding: 0.25rem 1rem;*/
+    .nolink-header a.external-icon {
             position: relative;
             left: 12px;
             bottom: 5px;
@@ -566,23 +578,15 @@ No-Link Brand Header
             color: var(--sq-logo-purple);
         }
 
-            .nolink-header a.external:active {
-                color: var(--sq-black);
-            }
-
-            .nolink-header a.external:hover {
-                color: var(--sq-blue);
-            }
-
-            .nolink-header a.external .oi {
+        .nolink-header a.external-icon .oi {
                 position: relative;
                 top: 1px;
                 font-size: 1.2rem;
                 color: var(--sq-logo-purple);
             }
 
-                .nolink-header a.external .oi:active,
-                .nolink-header a.external .oi:hover {
+            .nolink-header a.external-icon .oi:active,
+            .nolink-header a.external-icon .oi:hover {
                     color: var(--sq-pink);
                     transform: scale(1.2);
                     transform-origin: center;
