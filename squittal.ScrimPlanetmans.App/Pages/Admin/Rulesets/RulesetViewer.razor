@@ -56,13 +56,22 @@
 
                     <p style="margin-bottom: 0px; font-size: smaller;">
                         <span style="padding-right: 8px; color: var(--sq-gray); display: inline-block; width: 96px;">Created: </span>
-                        <span style="margin-bottom: 0px; text-align: left;">@($"{GetLocalizedDTO(_renderedRuleset.DateCreated):f}")</span>
+                        <span style="margin-bottom: 0px; text-align: left;">
+                            <LocalDate Date="DateTime.SpecifyKind(_renderedRuleset.DateCreated, DateTimeKind.Utc)" Format="f" />
+                        </span>
                     </p>
 
                     <p style="margin-bottom: 0px; font-size: smaller;">
                         <span style="padding-right: 8px; color: var(--sq-gray); display: inline-block; width: 96px;">Last Modified: </span>
                         <span style="margin-bottom: 0px; text-align: left;">
-                            @(_renderedLastModifiedDateTime != null ? $"{GetLocalizedDTO((DateTime)_renderedLastModifiedDateTime):f}" : "--")
+                            @if (_renderedLastModifiedDateTime is not null)
+                            {
+                                <LocalDate Date="DateTime.SpecifyKind(_renderedLastModifiedDateTime.Value, DateTimeKind.Utc)" Format="f" />
+                            }
+                            else
+                            {
+                                @("--")
+                            }
                         </span>
                     </p>
 
@@ -414,12 +423,6 @@
     private bool IsActiveRuleset(int rulesetId)
     {
         return RulesetDataService.ActiveRulesetId == rulesetId;
-    }
-
-    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return TZService.Localize(dateTime);
     }
 
     private string GetOverlayStatsDisplayString(OverlayStatsDisplayType statsType)

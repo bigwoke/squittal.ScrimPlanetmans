@@ -183,8 +183,17 @@
                                     }
 
                                     <td>@ruleset.Name <span style="color: var(--sq-gray);">[@ruleset.Id]</span></td>
-                                    <td>@($"{GetLocalizedDTO(ruleset.DateCreated):g}")</td>
-                                    <td>@(ruleset.DateLastModified != null ? $"{GetLocalizedDTO((DateTime)ruleset.DateLastModified):g}" : "--")</td>
+                                    <td><LocalDate Date=DateTime.SpecifyKind(ruleset.DateCreated,DateTimeKind.Utc) Format="g" /></td>
+                                    <td>
+                                        @if (ruleset.DateLastModified is not null)
+                                        {
+                                            <LocalDate Date="DateTime.SpecifyKind(ruleset.DateLastModified.Value, DateTimeKind.Utc)" Format="g" />
+                                        }
+                                        else
+                                        {
+                                            @("--");
+                                        }
+                                    </td>
                                     @*<td>
                                         <NavLink class="nav-link" href=@($"ruleset/{ruleset.Id}?edit=false") target="_self" style="padding: 4px 8px;">View<span class="oi oi-external-link" style="padding-left: 8px; font-size: 0.7rem;"></span></NavLink>
                                     </td>*@
@@ -574,12 +583,6 @@
     private bool IsDefaultRuleset(int rulesetId)
     {
         return rulesetId == RulesetDataService.CustomDefaultRulesetId;
-    }
-
-    private DateTimeOffset GetLocalizedDTO(DateTime dateTime)
-    {
-        dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-        return TZService.Localize(dateTime);
     }
 
     private void InvokeAsyncStateHasChanged()

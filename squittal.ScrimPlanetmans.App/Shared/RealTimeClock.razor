@@ -1,30 +1,25 @@
 ﻿@using System.Threading;
 @using squittal.ScrimPlanetmans.App.Services;
+@using squittal.ScrimPlanetmans.App.Pages.Shared;
 
 @implements IDisposable
 
 @inject TimeZoneService TZService
 
-<div class="header-clock">@_localClockString (Local) &nbsp;|&nbsp; @_utcClockString (UTC)</div>
+<div class="header-clock">
+    <LocalDate Date="DateTimeOffset.UtcNow" Format="MMM d, HH:mm:ss zzz" />
+    &nbsp;|&nbsp;
+    @DateTimeOffset.UtcNow.ToString("MMM d, HH:mm:ss") UTC
+</div>
 
 @code {
     private Timer _timer;
-    private string _localClockString = string.Empty;
-    private string _utcClockString = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        UpdateClock();
+        await InvokeAsync(StateHasChanged);
 
-        _timer = new Timer(_ => UpdateClock(), null, 0, 1000);
-    }
-
-    private void UpdateClock()
-    {
-        _localClockString = $"{TZService.LocalNow:MMM d, HH:mm:ss}";
-        _utcClockString = $"{DateTime.UtcNow:MMM d, HH:mm:ss}";
-
-        InvokeAsync(StateHasChanged);
+        _timer = new Timer(async _ => await InvokeAsync(StateHasChanged), null, 0, 1000);
     }
 
     public void Dispose() => _timer.Dispose();

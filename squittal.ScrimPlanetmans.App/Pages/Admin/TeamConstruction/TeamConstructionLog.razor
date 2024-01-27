@@ -1,8 +1,10 @@
-﻿@using squittal.ScrimPlanetmans.ScrimMatch.Messages;
+﻿@using squittal.ScrimPlanetmans.App.Services
+@using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 @using squittal.ScrimPlanetmans.Services.ScrimMatch;
 @using System.Collections.Concurrent;
 
 @inject IScrimMessageBroadcastService MessageService
+@inject TimeZoneService TZService
 
 @implements IDisposable
 
@@ -63,14 +65,12 @@
     #endregion
 
 
-    private void LogMessage(string message)
+    private async void LogMessage(string message)
     {
-        var time = DateTime.Now.ToString("hh:mm:ss.fff tt");
-
-        var newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{time}:</span>  {message}";
+        DateTimeOffset local = await TZService.LocalizeAsync(DateTimeOffset.UtcNow);
+        MarkupString newLogMessage = (MarkupString)$"<span style=\"font-weight: 600;\">{local:hh:mm:ss.fff tt}:</span>  {message}";
 
         _logQueue.Enqueue(newLogMessage);
-
         UpdatePage();
     }
 
