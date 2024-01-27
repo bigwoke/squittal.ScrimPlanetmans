@@ -525,7 +525,7 @@ No-Link Brand Header
     /*background-color: transparent !important;*/
     background-color: var(--sq-bg-white-unlit) !important;
     /*padding: 0.2rem 1.5rem 0.2rem 2rem;*/
-    padding: 0.45rem 1.5rem 0.2rem 3rem;
+    padding: 0.45rem 1rem 0.1rem 3rem;
     margin-left: auto;
     margin-right: auto;
     /*margin-top: 0.25rem;*/
@@ -571,56 +571,58 @@ No-Link Brand Header
         }
 
     .nolink-header a.external-icon {
+        position: relative;
+        margin-left: 0.75em;
+        vertical-align: middle;
+        font-size: 1.2rem;
+    }
+
+        .nolink-header a.external-icon .oi {
             position: relative;
-            left: 12px;
-            bottom: 5px;
-            padding: 0;
+            left: 1px;
             color: var(--sq-logo-purple);
         }
 
-        .nolink-header a.external-icon .oi {
-                position: relative;
-                top: 1px;
-                font-size: 1.2rem;
-                color: var(--sq-logo-purple);
-            }
-
             .nolink-header a.external-icon .oi:active,
             .nolink-header a.external-icon .oi:hover {
-                    color: var(--sq-pink);
-                    transform: scale(1.2);
-                    transform-origin: center;
-                }
+                color: var(--sq-pink);
+                transform: scale(1.2);
+                transform-origin: center;
+            }
 
     .nolink-header img {
         height: 1.5rem;
         width: 1.5rem;
     }
 
-    .nolink-header span {
+    .nolink-header .squittal-title {
         font-size: 1.2rem;
         color: var(--sq-logo-purple);
         display: inline-block;
         vertical-align: middle;
     }
 
-        .nolink-header span:first-of-type {
+        .nolink-header .squittal-title:first-of-type {
             position: absolute;
         }
 
-        .nolink-header span:nth-of-type(2) {
+        .nolink-header .squittal-title:nth-of-type(2) {
             position: relative;
             background: linear-gradient(175deg, var(--pink) 30%, var(--sq-logo-purple) 100%);
             color: transparent;
             mix-blend-mode: saturation;
         }
 
-    .nolink-header .header-clock {
-        font-size: 1rem;
-        vertical-align: text-top;
-        display: inline;
-        color: var(--sq-logo-purple);
+    .nolink-header .right-header {
+        float: right;
     }
+
+        .nolink-header .header-clock {
+            font-size: 1rem;
+            vertical-align: text-top;
+            display: inline;
+            color: var(--sq-logo-purple);
+        }
 
 
 .col-lg-6 {
