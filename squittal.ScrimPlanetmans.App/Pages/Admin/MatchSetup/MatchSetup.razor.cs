@@ -187,6 +187,13 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                         newMatchConfiguration.TrySetEndRoundOnFacilityCapture(_matchConfiguration.EndRoundOnFacilityCapture, true);
                     }
 
+                    // Preserve facility id on page reload
+                    // TODO: separate match configuration logic from the setup page
+                    if (_matchConfiguration.FacilityId != -1)
+                    {
+                        newMatchConfiguration.FacilityIdString = _matchConfiguration.FacilityIdString;
+                    }
+
                     // TODO: carry over old settings depending on what the Round Win Condition is
 
                     _matchConfiguration.CopyValues(newMatchConfiguration);
