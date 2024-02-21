@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using squittal.ScrimPlanetmans.App.Hubs;
+using squittal.ScrimPlanetmans.Models;
 using squittal.ScrimPlanetmans.Models.Planetside;
 using squittal.ScrimPlanetmans.Models.ScrimEngine;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
@@ -27,17 +29,16 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Facility & World Select List Variables
         private const string _noFacilityIdValue = "-1";
 
-        private List<int> _mapZones = new();
-        private IEnumerable<MapRegion> _mapRegions;
+        private IOrderedEnumerable<MapRegion> _mapRegions;
+        private IOrderedEnumerable<World> _worlds;
         private IEnumerable<Zone> _zones;
-        private IEnumerable<World> _worlds;
         #endregion
 
         #region State Control Variables
-        private bool _isLoading = false;
+        private bool _isLoading = true;
+        private bool _isLoadingRulesets = true;
+        private bool _isLoadingActiveRulesetConfig = true;
         private bool _isChangingRuleset = false;
-        private bool _isLoadingRulesets = false;
-        private bool _isLoadingActiveRulesetConfig = false;
 
         private bool _isClearingMatch = false;
         private bool _isEndingRound = false;
@@ -51,42 +52,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         private MatchState _matchState = MatchState.Uninitialized;
         #endregion
 
-        #region Initialization Methods
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                _isLoading = true;
-
-                var TaskList = new List<Task>();
-
-                var censusStreamStatusTask = GetCensusStreamStatus();
-                TaskList.Add(censusStreamStatusTask);
-
-                var zonesTask = ZoneService.GetAllZones();
-                TaskList.Add(zonesTask);
-
-                var worldsTask = WorldService.GetAllWorldsAsync();
-                TaskList.Add(worldsTask);
-
-                var rulesetsTask = SetUpRulesetsAsync();
-                TaskList.Add(rulesetsTask);
-
-                var activeRulesetConfigTask = SetUpActiveRulesetConfigAsync();
-                TaskList.Add(activeRulesetConfigTask);
-
-                await Task.WhenAll(TaskList);
-
-                _worlds = worldsTask.Result.OrderBy(worlds => worlds.Name).ToList();
-
-                _zones = zonesTask.Result;
-
-                _isLoading = false;
-                InvokeAsyncStateHasChanged();
-            }
-        }
-
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
             MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
@@ -113,6 +79,19 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             _currentRound = ScrimMatchEngine.GetCurrentRound();
             _matchState = ScrimMatchEngine.GetMatchState();
             _matchId = ScrimMatchEngine.GetMatchId();
+
+            List<Task> taskList = new()
+            {
+                GetCensusStreamStatusAsync(),
+                LoadRulesetsAsync(),
+                SetUpActiveRulesetConfigAsync()
+            };
+            await Task.WhenAll(taskList);
+
+            _worlds = (await WorldService.GetAllWorldsAsync()).OrderBy(world => world.Name);
+            _zones = (await ZoneService.GetAllZonesAsync()).Where(z => _mapRegions.Any(r => r.ZoneId == z.Id));
+
+            _isLoading = false;
         }
 
         public void Dispose()
@@ -123,11 +102,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             MessageService.RaiseMatchControlSignalReceiptMessage -= ReceiveMatchControlSignalReceiptMessage;
         }
 
-        private async Task SetUpRulesetsAsync()
+        private async Task LoadRulesetsAsync()
         {
-            _isLoadingRulesets = true;
-            InvokeAsyncStateHasChanged();
-
             _rulesets = await RulesetManager.GetRulesetsAsync(CancellationToken.None);
 
             _isLoadingRulesets = false;
@@ -136,8 +112,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private async Task SetUpActiveRulesetConfigAsync()
         {
-            _isLoadingActiveRulesetConfig = true;
-
             _activeRuleset = await RulesetManager.GetActiveRulesetAsync();
 
             if (_activeRuleset != null)
@@ -200,52 +174,34 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 if (_activeRuleset.RulesetFacilityRules.Any())
                 {
-                    var mapRegions = _activeRuleset.RulesetFacilityRules.Select(r => r.MapRegion).ToList();
-                    _mapRegions = mapRegions.OrderBy(r => r.FacilityName).ToList();
-
-                    _mapZones = _mapRegions.Select(r => r.ZoneId).Distinct().ToList();
+                    _mapRegions = _activeRuleset.RulesetFacilityRules.Select(r => r.MapRegion).OrderBy(r => r.FacilityName);
                 }
                 else
                 {
-                    var mapRegions = await FacilityService.GetScrimmableMapRegionsAsync();
-
-                    _mapRegions = mapRegions.OrderBy(r => r.FacilityName).ToList();
-                    _mapZones = _mapRegions.Select(r => r.ZoneId).Distinct().ToList();
+                    _mapRegions = (await FacilityService.GetScrimmableMapRegionsAsync()).OrderBy(r => r.FacilityName);
                 }
-            }
+                }
 
             _isLoadingActiveRulesetConfig = false;
             InvokeAsyncStateHasChanged();
         }
-        #endregion Initialization Methods
 
-        #region  Match & Subscription State Buttons
-        private async Task GetCensusStreamStatus()
+        #region Census Subscription State
+        private async Task GetCensusStreamStatusAsync()
         {
             var status = await WebsocketMonitor.GetStatus();
             _isStreamServiceEnabled = status.IsEnabled;
 
             if (!_isStreamServiceEnabled)
             {
-                SetWebsocketConnectionErrorMessage();
+                _errorBannerMessage = "Failed to connect to the Planetside 2 Websocket";
             }
             else
             {
-                ClearErrorMessage();
+                _errorBannerMessage = string.Empty;
             }
         }
-
-        private void SubscribeToCensus()
-        {
-            ScrimMatchEngine.SubmitPlayersList();
-            LogAdminMessage($"Subscribed all characters to Stream Monitor!");
-        }
-
-        private void EndCensusSubscription()
-        {
-            WebsocketMonitor.RemoveAllCharacterSubscriptions();
-            LogAdminMessage($"Removed all characters from Stream Monitor!");
-        }
+        #endregion Census Subscription State
 
         #region Match Controls
         private async void StartMatch()
@@ -256,7 +212,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 InvokeAsyncStateHasChanged();
 
                 ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-                await Task.Run(() => ScrimMatchEngine.Start());
+                await Task.Run(ScrimMatchEngine.Start);
 
                 _isDeleteDataEnabled = false;
                 _isStartingRound = false;
@@ -271,7 +227,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 _isEndingRound = true;
                 InvokeAsyncStateHasChanged();
 
-                await Task.Run(() => ScrimMatchEngine.EndRound());
+                await Task.Run(ScrimMatchEngine.EndRound);
+
                 _isDeleteDataEnabled = false;
                 _isEndingRound = false;
                 InvokeAsyncStateHasChanged();
@@ -283,6 +240,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             if (ScrimMatchEngine.GetMatchState() == MatchState.Running)
             {
                 ScrimMatchEngine.PauseRound();
+
                 _isDeleteDataEnabled = false;
                 InvokeAsyncStateHasChanged();
             }
@@ -293,6 +251,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             if (ScrimMatchEngine.GetMatchState() == MatchState.Paused)
             {
                 ScrimMatchEngine.ResumeRound();
+
                 _isDeleteDataEnabled = false;
                 InvokeAsyncStateHasChanged();
             }
@@ -310,17 +269,12 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
                 _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
-                _matchConfiguration.Title = (_activeRuleset.DefaultMatchTitle == null) ? string.Empty : _activeRuleset.DefaultMatchTitle;
+                _matchConfiguration.Title = _activeRuleset.DefaultMatchTitle ?? string.Empty;
+            }
 
                 _isClearingMatch = false;
                 InvokeAsyncStateHasChanged();
             }
-            else
-            {
-                _isClearingMatch = false;
-                InvokeAsyncStateHasChanged();
-            }
-        }
 
         private async void ResetRound()
         {
@@ -330,7 +284,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 _isDeleteDataEnabled = false;
                 InvokeAsyncStateHasChanged();
 
-                await Task.Run(() => ScrimMatchEngine.ResetRound());
+                await Task.Run(ScrimMatchEngine.ResetRound);
+
                 _isResettingRound = false;
                 InvokeAsyncStateHasChanged();
             }
@@ -446,10 +401,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         }
         #endregion Form Handling
 
-        #endregion Match & Subscription State Buttons
-
-
-        #region  Event Handling
+        #region Event Handling
         private void ReceiveMatchStateUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
         {
             var message = e.Message;
@@ -473,8 +425,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             var newWorldIdIsManual = config.IsManualWorldId;
 
 
-            // Set isRollBack=true to force setting WorldId without chaning IsManualWorldId
-            var success = _matchConfiguration.TrySetWorldId(newWorldId, newWorldIdIsManual, true);
+            // Set isRollBack=true to force setting WorldId without changing IsManualWorldId
+            _matchConfiguration.TrySetWorldId(newWorldId, newWorldIdIsManual, true);
 
             InvokeAsyncStateHasChanged();
         }
@@ -483,17 +435,15 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             var message = e.Message;
 
-            if (!message.ChangedSettings.Contains(RulesetSettingChange.DefaultEndRoundOnFacilityCapture))
+            if (message.ChangedSettings.Contains(RulesetSettingChange.DefaultEndRoundOnFacilityCapture))
             {
-                return;
-            }
+                bool newSetting = message.Ruleset.DefaultEndRoundOnFacilityCapture;
 
-            var success = _matchConfiguration.TrySetEndRoundOnFacilityCapture(message.Ruleset.DefaultEndRoundOnFacilityCapture, false);
-
-            if (success)
+                if (_matchConfiguration.TrySetEndRoundOnFacilityCapture(newSetting, false))
             {
                 InvokeAsyncStateHasChanged();
             }
+        }
         }
 
         private void ReceiveMatchControlSignalReceiptMessage(object sender, ScrimMessageEventArgs<MatchControlSignalReceiptMessage> e)
@@ -501,17 +451,18 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             _isDeleteDataEnabled = false;
             InvokeAsyncStateHasChanged();
 
-            if (e.Message.Signal == "Rematch" || e.Message.Signal == "ClearMatch")
+            string signal = e.Message.Signal;
+
+            if (signal == nameof(MatchControlHub.Rematch) || signal == nameof(MatchControlHub.ClearMatch))
             {
                 _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
                 _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
-                _matchConfiguration.Title = (_activeRuleset.DefaultMatchTitle == null) ? string.Empty : _activeRuleset.DefaultMatchTitle;
+                _matchConfiguration.Title = _activeRuleset.DefaultMatchTitle ?? string.Empty;
 
                 InvokeAsyncStateHasChanged();
             }
         }
-
-        #endregion
+        #endregion Event Handling
 
         #region Ruleset Form Controls
         private async void OnChangeRulesetSelection(string rulesetStringId)

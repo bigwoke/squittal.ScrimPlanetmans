@@ -205,20 +205,20 @@
                                 </InputSelect>
                             }
 
-                            @if (_mapZones != null && _mapRegions != null && _zones != null)
+                            @if (_mapRegions != null && _zones != null)
                             {
                                 <InputSelect style="margin-right: 5px; width: 250px; padding: 0.1rem;" @bind-Value=@_matchConfiguration.FacilityIdString>
                                     <option value=@_noFacilityIdValue>No Base</option>
 
-                                    @foreach (var zone in _mapZones)
-                                            {
-                                        <optgroup label="@(_zones.Where(z => zone == z.Id).Select(z => z.Name).FirstOrDefault())" style="background-color: var(--sq-bg-white-unlit); color: var(--sq-pink); font-size: 1rem;">@(_zones.Where(z => zone == z.Id).Select(z => z.Name).FirstOrDefault())</optgroup>
+                                    @foreach (Zone zone in _zones)
+                                    {
+                                        <optgroup label="@(zone.Name)" style="background-color: var(--sq-bg-white-unlit); color: var(--sq-pink); font-size: 1rem;">@(zone.Name)</optgroup>
 
-                                        @foreach (var region in _mapRegions.Where(r => r.ZoneId == zone))
-                                                {
+                                        @foreach (var region in _mapRegions.Where(r => r.ZoneId == zone.Id))
+                                        {
                                             <option value=@region.FacilityId.ToString() label="@region.FacilityName">@region.FacilityName (@region.FacilityId.ToString())</option>
-                                                }
-                                            }
+                                        }
+                                    }
                                 </InputSelect>
                             }
                         </div>
