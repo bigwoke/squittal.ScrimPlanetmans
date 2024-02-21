@@ -121,7 +121,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 if (_matchConfiguration != null)
                 {
-                    var newMatchConfiguration = new MatchConfiguration(_activeRuleset);
+                    MatchConfiguration newMatchConfiguration = new MatchConfiguration(_activeRuleset);
 
                     if (_matchConfiguration.IsManualTitle)
                     {
@@ -180,7 +180,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 {
                     _mapRegions = (await FacilityService.GetScrimmableMapRegionsAsync()).OrderBy(r => r.FacilityName);
                 }
-                }
+            }
 
             _isLoadingActiveRulesetConfig = false;
             InvokeAsyncStateHasChanged();
@@ -189,7 +189,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Census Subscription State
         private async Task GetCensusStreamStatusAsync()
         {
-            var status = await WebsocketMonitor.GetStatus();
+            ServiceState status = await WebsocketMonitor.GetStatus();
             _isStreamServiceEnabled = status.IsEnabled;
 
             if (!_isStreamServiceEnabled)
@@ -272,9 +272,9 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 _matchConfiguration.Title = _activeRuleset.DefaultMatchTitle ?? string.Empty;
             }
 
-                _isClearingMatch = false;
-                InvokeAsyncStateHasChanged();
-            }
+            _isClearingMatch = false;
+            InvokeAsyncStateHasChanged();
+        }
 
         private async void ResetRound()
         {
@@ -295,7 +295,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Form Handling
         private void OnChangeMatchTitle(string newTitle)
         {
-            var oldTitle = _matchConfiguration.Title;
+            string oldTitle = _matchConfiguration.Title;
 
             if (newTitle != oldTitle)
             {
@@ -310,7 +310,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangeRoundLength(int newLength)
         {
-            var oldLength = _matchConfiguration.RoundSecondsTotal;
+            int oldLength = _matchConfiguration.RoundSecondsTotal;
 
             if (newLength != oldLength)
             {
@@ -325,7 +325,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangeTargetPointValue(int newTarget)
         {
-            var oldTarget = _matchConfiguration.TargetPointValue;
+            int? oldTarget = _matchConfiguration.TargetPointValue;
 
             if (newTarget != oldTarget)
             {
@@ -340,7 +340,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangePeriodicControlPoints(int newPoints)
         {
-            var oldPoints = _matchConfiguration.PeriodicFacilityControlPoints;
+            int? oldPoints = _matchConfiguration.PeriodicFacilityControlPoints;
 
             if (newPoints != oldPoints)
             {
@@ -355,7 +355,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangePeriodicControlPointsInterval(int newInterval)
         {
-            var oldInterval = _matchConfiguration.PeriodicFacilityControlInterval;
+            int? oldInterval = _matchConfiguration.PeriodicFacilityControlInterval;
 
             if (newInterval != oldInterval)
             {
@@ -370,9 +370,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangeWorldId(string newWorldId)
         {
-            //Console.WriteLine($"MatchSetup: OnChangeWorldId({newWorldId})");
-
-            var oldWorldId = _matchConfiguration.WorldIdString;
+            string oldWorldId = _matchConfiguration.WorldIdString;
 
             if (newWorldId != oldWorldId)
             {
@@ -387,7 +385,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangeEndRoundOnFacilityCapture(bool newSetting)
         {
-            var oldSetting = _matchConfiguration.EndRoundOnFacilityCapture;
+            bool oldSetting = _matchConfiguration.EndRoundOnFacilityCapture;
 
             if (newSetting != oldSetting)
             {
@@ -404,7 +402,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Event Handling
         private void ReceiveMatchStateUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
         {
-            var message = e.Message;
+            MatchStateUpdateMessage message = e.Message;
 
             _currentRound = message.CurrentRound;
             _matchState = message.MatchState;
@@ -417,13 +415,10 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         // ScrimMatchEngine sends out this message after updating the WorldId from players/outfits
         private void ReceiveMatchConfigurationUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchConfigurationUpdateMessage> e)
         {
-            var message = e.Message;
+            MatchConfiguration config = e.Message.MatchConfiguration;
 
-            var config = message.MatchConfiguration;
-
-            var newWorldId = config.WorldIdString;
-            var newWorldIdIsManual = config.IsManualWorldId;
-
+            string newWorldId = config.WorldIdString;
+            bool newWorldIdIsManual = config.IsManualWorldId;
 
             // Set isRollBack=true to force setting WorldId without changing IsManualWorldId
             _matchConfiguration.TrySetWorldId(newWorldId, newWorldIdIsManual, true);
@@ -433,17 +428,17 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void ReceiveRulesetSettingChangeEvent(object sender, ScrimMessageEventArgs<RulesetSettingChangeMessage> e)
         {
-            var message = e.Message;
+            RulesetSettingChangeMessage message = e.Message;
 
             if (message.ChangedSettings.Contains(RulesetSettingChange.DefaultEndRoundOnFacilityCapture))
             {
                 bool newSetting = message.Ruleset.DefaultEndRoundOnFacilityCapture;
 
                 if (_matchConfiguration.TrySetEndRoundOnFacilityCapture(newSetting, false))
-            {
-                InvokeAsyncStateHasChanged();
+                {
+                    InvokeAsyncStateHasChanged();
+                }
             }
-        }
         }
 
         private void ReceiveMatchControlSignalReceiptMessage(object sender, ScrimMessageEventArgs<MatchControlSignalReceiptMessage> e)
@@ -470,7 +465,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             _isChangingRuleset = true;
             InvokeAsyncStateHasChanged();
 
-            if (!int.TryParse(rulesetStringId, out var rulesetId))
+            if (!int.TryParse(rulesetStringId, out int rulesetId))
             {
                 _isChangingRuleset = false;
                 InvokeAsyncStateHasChanged();
@@ -484,7 +479,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 return;
             }
 
-            var newActiveRuleset = await RulesetManager.ActivateRulesetAsync(rulesetId);
+            Ruleset newActiveRuleset = await RulesetManager.ActivateRulesetAsync(rulesetId);
 
             if (newActiveRuleset == null || newActiveRuleset.Id == _activeRuleset.Id)
             {
