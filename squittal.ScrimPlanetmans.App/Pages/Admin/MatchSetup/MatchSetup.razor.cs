@@ -42,7 +42,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         private bool _isClearingMatch = false;
         private bool _isEndingRound = false;
         private bool _isResettingRound = false;
-        private bool _isRunning = false;
         private bool _isStartingRound = false;
 
         private bool _isDeleteDataEnabled = false;
@@ -111,7 +110,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 _matchConfiguration = new MatchConfiguration();
             }
 
-            _isRunning = ScrimMatchEngine.IsRunning();
             _currentRound = ScrimMatchEngine.GetCurrentRound();
             _matchState = ScrimMatchEngine.GetMatchState();
             _matchId = ScrimMatchEngine.GetMatchId();
@@ -348,8 +346,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetTitle(newTitle, true))
                 {
-                    //Console.WriteLine($"Set Title succeeded: {newTitle}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -365,8 +361,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetRoundLength(newLength, true))
                 {
-                    //Console.WriteLine($"Set Round Length succeeded: {newLength}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -382,8 +376,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetTargetPointValue(newTarget, true))
                 {
-                    //Console.WriteLine($"Set Target Points succeeded: {newTarget}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -399,8 +391,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetPeriodicFacilityControlPoints(newPoints, true))
                 {
-                    //Console.WriteLine($"Set Periodic Points succeeded: {newPoints}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -416,8 +406,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetPeriodicFacilityControlInterval(newInterval, true))
                 {
-                    //Console.WriteLine($"Set Periodic Interval succeeded: {newInterval}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -435,8 +423,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetWorldId(newWorldId, true))
                 {
-                    //Console.WriteLine($"MatchSetup: Set WorldId succeeded: {newWorldId}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -452,8 +438,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 if (_matchConfiguration.TrySetEndRoundOnFacilityCapture(newSetting, true))
                 {
-                    //Console.WriteLine($"Set End on Capture succeeded: {newSetting}");
-
                     ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
 
                     InvokeAsyncStateHasChanged();
@@ -470,12 +454,9 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             var message = e.Message;
 
-            _isRunning = message.MatchState == MatchState.Running;
             _currentRound = message.CurrentRound;
             _matchState = message.MatchState;
-
             _matchId = message.MatchId;
-
             _matchConfiguration.Title = message.MatchTitle;
 
             InvokeAsyncStateHasChanged();
@@ -486,15 +467,10 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             var message = e.Message;
 
-            //Console.WriteLine("MatchSetup: received MatchConfigurationUpdateMessage");
-
             var config = message.MatchConfiguration;
 
             var newWorldId = config.WorldIdString;
             var newWorldIdIsManual = config.IsManualWorldId;
-
-            //Console.WriteLine($"MatchSetup: received MatchConfigurationUpdateMessage with WorldId {newWorldId} & IsManualWorldId {newWorldIdIsManual}");
-            //Console.WriteLine($"MatchSetup: current WorldId = {newWorldId} & IsManualWorldId = {newWorldIdIsManual}");
 
 
             // Set isRollBack=true to force setting WorldId without chaning IsManualWorldId
@@ -577,34 +553,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         }
         #endregion Ruleset Form Controls
 
-        #region Log Messages
-        private void LogAdminMessage(string message)
-        {
-            Task.Run(() =>
-            {
-                MessageService.BroadcastSimpleMessage(message);
-            }).ConfigureAwait(false);
-        }
-        #endregion Log Messages
-
-        #region Error Messages
-        private void ClearErrorMessage()
-        {
-            _errorBannerMessage = string.Empty;
-        }
-
-        private void SetWebsocketConnectionErrorMessage()
-        {
-            _errorBannerMessage = "Failed to connect to the Planetside 2 Websocket";
-        }
-        #endregion Error Messages
-
-        private void InvokeAsyncStateHasChanged()
-        {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
-        }
+        private void InvokeAsyncStateHasChanged() => InvokeAsync(StateHasChanged);
     }
 }
