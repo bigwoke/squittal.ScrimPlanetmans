@@ -405,6 +405,16 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
+        public bool TrySetFacilityId(string facilityIdString)
+        {
+            _autoEvent.WaitOne();
+
+            FacilityIdString = facilityIdString;
+
+            _autoEvent.Set();
+            return true;
+        }
+
         private int GetFacilityIdFromString()
         {
             if (int.TryParse(FacilityIdString, out int intId))

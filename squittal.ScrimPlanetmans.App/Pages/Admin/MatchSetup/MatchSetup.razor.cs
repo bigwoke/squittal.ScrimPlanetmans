@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,7 +13,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 {
     public sealed partial class MatchSetup
     {
-        private MatchConfiguration _matchConfiguration;
         private string _errorBannerMessage;
         private string _matchId = string.Empty;
 
@@ -64,18 +62,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             MessageService.RaiseRulesetSettingChangeEvent += ReceiveRulesetSettingChangeEvent;
             MessageService.RaiseMatchControlSignalReceiptMessage += ReceiveMatchControlSignalReceiptMessage;
 
-            if (ScrimMatchEngine.MatchConfiguration != null)
-            {
-                Console.WriteLine($"MatchSetup: fetching MatchConfiguration from ScrimMatchEngine");
-                _matchConfiguration = new MatchConfiguration();
-                _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
-            }
-            else
-            {
-                Console.WriteLine($"MatchSetup: creating new MatchConfiguration");
-                _matchConfiguration = new MatchConfiguration();
-            }
-
             _currentRound = ScrimMatchEngine.GetCurrentRound();
             _matchState = ScrimMatchEngine.GetMatchState();
             _matchId = ScrimMatchEngine.GetMatchId();
@@ -114,63 +100,59 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             _activeRuleset = await RulesetManager.GetActiveRulesetAsync();
 
-            if (_activeRuleset != null)
+            if (_activeRuleset != null) // afaik this should never be null
             {
                 _selectedRuleset = _activeRuleset;
                 _inputSelectRulesetStringId = _activeRuleset.Id.ToString();
 
-                if (_matchConfiguration != null)
+                // TODO: probably move this to SME
+                MatchConfiguration newMatchConfiguration = new(_activeRuleset);
+
+                if (ScrimMatchEngine.ConfigIsManualTitle)
                 {
-                    MatchConfiguration newMatchConfiguration = new MatchConfiguration(_activeRuleset);
-
-                    if (_matchConfiguration.IsManualTitle)
-                    {
-                        newMatchConfiguration.TrySetTitle(_matchConfiguration.Title, true);
-                    }
-
-                    // Preserve WorldId settings when changing ruleset
-                    if (_matchConfiguration.IsWorldIdSet)
-                    {
-                        newMatchConfiguration.TrySetWorldId(_matchConfiguration.WorldIdString, _matchConfiguration.IsManualWorldId);
-                    }
-
-                    if (_matchConfiguration.IsManualRoundSecondsTotal)
-                    {
-                        newMatchConfiguration.TrySetRoundLength(_matchConfiguration.RoundSecondsTotal, true);
-                    }
-
-                    if (_matchConfiguration.IsManualTargetPointValue)
-                    {
-                        newMatchConfiguration.TrySetTargetPointValue(_matchConfiguration.TargetPointValue, true);
-                    }
-
-                    if (_matchConfiguration.IsManualPeriodicFacilityControlPoints)
-                    {
-                        newMatchConfiguration.TrySetPeriodicFacilityControlPoints(_matchConfiguration.PeriodicFacilityControlPoints, true);
-                    }
-
-                    if (_matchConfiguration.IsManualPeriodicFacilityControlInterval)
-                    {
-                        newMatchConfiguration.TrySetPeriodicFacilityControlInterval(_matchConfiguration.PeriodicFacilityControlInterval, true);
-                    }
-
-                    if (_matchConfiguration.IsManualEndRoundOnFacilityCapture)
-                    {
-                        newMatchConfiguration.TrySetEndRoundOnFacilityCapture(_matchConfiguration.EndRoundOnFacilityCapture, true);
-                    }
-
-                    // Preserve facility id on page reload
-                    // TODO: separate match configuration logic from the setup page
-                    if (_matchConfiguration.FacilityId != -1)
-                    {
-                        newMatchConfiguration.FacilityIdString = _matchConfiguration.FacilityIdString;
-                    }
-
-                    // TODO: carry over old settings depending on what the Round Win Condition is
-
-                    _matchConfiguration.CopyValues(newMatchConfiguration);
-                    MessageService.BroadcastMatchConfigurationUpdateMessage(new MatchConfigurationUpdateMessage(_matchConfiguration));
+                    newMatchConfiguration.TrySetTitle(ScrimMatchEngine.ConfigTitle, true);
                 }
+
+                // Preserve WorldId settings when changing ruleset
+                if (ScrimMatchEngine.ConfigIsWorldIdSet)
+                {
+                    newMatchConfiguration.TrySetWorldId(ScrimMatchEngine.ConfigWorldId.ToString(), ScrimMatchEngine.ConfigIsManualWorldId);
+                }
+
+                if (ScrimMatchEngine.ConfigIsManualRoundSecondsTotal)
+                {
+                    newMatchConfiguration.TrySetRoundLength(ScrimMatchEngine.ConfigRoundSecondsTotal, true);
+                }
+
+                if (ScrimMatchEngine.ConfigIsManualTargetPointValue)
+                {
+                    newMatchConfiguration.TrySetTargetPointValue(ScrimMatchEngine.ConfigTargetPointValue, true);
+                }
+
+                if (ScrimMatchEngine.ConfigIsManualPeriodicFacilityControlPoints)
+                {
+                    newMatchConfiguration.TrySetPeriodicFacilityControlPoints(ScrimMatchEngine.ConfigPeriodicFacilityControlPoints, true);
+                }
+
+                if (ScrimMatchEngine.ConfigIsManualPeriodicFacilityControlInterval)
+                {
+                    newMatchConfiguration.TrySetPeriodicFacilityControlInterval(ScrimMatchEngine.ConfigPeriodicFacilityControlInterval, true);
+                }
+
+                if (ScrimMatchEngine.ConfigIsManualEndRoundOnFacilityCapture)
+                {
+                    newMatchConfiguration.TrySetEndRoundOnFacilityCapture(ScrimMatchEngine.ConfigEndRoundOnFacilityCapture, true);
+                }
+
+                // Preserve facility id on page reload
+                if (ScrimMatchEngine.ConfigFacilityId != -1)
+                {
+                    newMatchConfiguration.FacilityIdString = ScrimMatchEngine.ConfigFacilityId.ToString();
+                }
+
+                // TODO: carry over old settings depending on what the Round Win Condition is
+
+                ScrimMatchEngine.ConfigureMatch(newMatchConfiguration);
 
                 if (_activeRuleset.RulesetFacilityRules.Any())
                 {
@@ -211,7 +193,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 _isStartingRound = true;
                 InvokeAsyncStateHasChanged();
 
-                ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
                 await Task.Run(ScrimMatchEngine.Start);
 
                 _isDeleteDataEnabled = false;
@@ -267,9 +248,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 await Task.Run(() => ScrimMatchEngine.ClearMatch(isRematch));
 
-                _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
-                _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
-                _matchConfiguration.Title = _activeRuleset.DefaultMatchTitle ?? string.Empty;
+                ScrimMatchEngine.TrySetConfigRoundLength(_activeRuleset.DefaultRoundLength, false);
+                ScrimMatchEngine.TrySetConfigTitle(_activeRuleset.DefaultMatchTitle ?? string.Empty, false);
             }
 
             _isClearingMatch = false;
@@ -295,14 +275,12 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Form Handling
         private void OnChangeMatchTitle(string newTitle)
         {
-            string oldTitle = _matchConfiguration.Title;
+            string oldTitle = ScrimMatchEngine.ConfigTitle;
 
             if (newTitle != oldTitle)
             {
-                if (_matchConfiguration.TrySetTitle(newTitle, true))
+                if (ScrimMatchEngine.TrySetConfigTitle(newTitle, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
@@ -310,89 +288,87 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         private void OnChangeRoundLength(int newLength)
         {
-            int oldLength = _matchConfiguration.RoundSecondsTotal;
+            int oldLength = ScrimMatchEngine.ConfigRoundSecondsTotal;
 
             if (newLength != oldLength)
             {
-                if (_matchConfiguration.TrySetRoundLength(newLength, true))
+                if (ScrimMatchEngine.TrySetConfigRoundLength(newLength, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
         }
 
-        private void OnChangeTargetPointValue(int newTarget)
+        private void OnChangeTargetPointValue(int? newTarget)
         {
-            int? oldTarget = _matchConfiguration.TargetPointValue;
+            int? oldTarget = ScrimMatchEngine.ConfigTargetPointValue;
 
             if (newTarget != oldTarget)
             {
-                if (_matchConfiguration.TrySetTargetPointValue(newTarget, true))
+                if (ScrimMatchEngine.TrySetConfigTargetPointValue(newTarget, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
         }
 
-        private void OnChangePeriodicControlPoints(int newPoints)
+        private void OnChangePeriodicControlPoints(int? newPoints)
         {
-            int? oldPoints = _matchConfiguration.PeriodicFacilityControlPoints;
+            int? oldPoints = ScrimMatchEngine.ConfigPeriodicFacilityControlPoints;
 
             if (newPoints != oldPoints)
             {
-                if (_matchConfiguration.TrySetPeriodicFacilityControlPoints(newPoints, true))
+                if (ScrimMatchEngine.TrySetConfigPeriodicFacilityControlPoints(newPoints, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
         }
 
-        private void OnChangePeriodicControlPointsInterval(int newInterval)
+        private void OnChangePeriodicControlPointsInterval(int? newInterval)
         {
-            int? oldInterval = _matchConfiguration.PeriodicFacilityControlInterval;
+            int? oldInterval = ScrimMatchEngine.ConfigPeriodicFacilityControlInterval;
 
             if (newInterval != oldInterval)
             {
-                if (_matchConfiguration.TrySetPeriodicFacilityControlInterval(newInterval, true))
+                if (ScrimMatchEngine.TrySetConfigPeriodicFacilityControlInterval(newInterval, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
         }
 
-        private void OnChangeWorldId(string newWorldId)
+        private void OnChangeWorldId(int newWorldId)
         {
-            string oldWorldId = _matchConfiguration.WorldIdString;
+            int oldWorldId = ScrimMatchEngine.ConfigWorldId;
 
             if (newWorldId != oldWorldId)
             {
-                if (_matchConfiguration.TrySetWorldId(newWorldId, true))
+                if (ScrimMatchEngine.TrySetConfigWorldId(newWorldId, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
+            }
+        }
+
+        private void OnChangeFacilityId(int newFacilityId)
+        {
+            int oldFacilityId = ScrimMatchEngine.ConfigFacilityId;
+
+            if (newFacilityId != oldFacilityId)
+            {
+                ScrimMatchEngine.TrySetConfigFacilityId(newFacilityId.ToString());
             }
         }
 
         private void OnChangeEndRoundOnFacilityCapture(bool newSetting)
         {
-            bool oldSetting = _matchConfiguration.EndRoundOnFacilityCapture;
+            bool oldSetting = ScrimMatchEngine.ConfigEndRoundOnFacilityCapture;
 
             if (newSetting != oldSetting)
             {
-                if (_matchConfiguration.TrySetEndRoundOnFacilityCapture(newSetting, true))
+                if (ScrimMatchEngine.TrySetConfigEndRoundOnFacilityCapture(newSetting, true))
                 {
-                    ScrimMatchEngine.ConfigureMatch(_matchConfiguration);
-
                     InvokeAsyncStateHasChanged();
                 }
             }
@@ -407,7 +383,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             _currentRound = message.CurrentRound;
             _matchState = message.MatchState;
             _matchId = message.MatchId;
-            _matchConfiguration.Title = message.MatchTitle;
 
             InvokeAsyncStateHasChanged();
         }
@@ -415,14 +390,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         // ScrimMatchEngine sends out this message after updating the WorldId from players/outfits
         private void ReceiveMatchConfigurationUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchConfigurationUpdateMessage> e)
         {
-            MatchConfiguration config = e.Message.MatchConfiguration;
-
-            string newWorldId = config.WorldIdString;
-            bool newWorldIdIsManual = config.IsManualWorldId;
-
-            // Set isRollBack=true to force setting WorldId without changing IsManualWorldId
-            _matchConfiguration.TrySetWorldId(newWorldId, newWorldIdIsManual, true);
-
             InvokeAsyncStateHasChanged();
         }
 
@@ -434,7 +401,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 bool newSetting = message.Ruleset.DefaultEndRoundOnFacilityCapture;
 
-                if (_matchConfiguration.TrySetEndRoundOnFacilityCapture(newSetting, false))
+                if (ScrimMatchEngine.TrySetConfigEndRoundOnFacilityCapture(newSetting, false))
                 {
                     InvokeAsyncStateHasChanged();
                 }
@@ -449,11 +416,9 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             string signal = e.Message.Signal;
 
             if (signal == nameof(MatchControlHub.Rematch) || signal == nameof(MatchControlHub.ClearMatch))
-            {
-                _matchConfiguration.CopyValues(ScrimMatchEngine.MatchConfiguration);
-                _matchConfiguration.RoundSecondsTotal = _activeRuleset.DefaultRoundLength;
-                _matchConfiguration.Title = _activeRuleset.DefaultMatchTitle ?? string.Empty;
-
+            {                
+                ScrimMatchEngine.TrySetConfigRoundLength(_activeRuleset.DefaultRoundLength, false);
+                ScrimMatchEngine.TrySetConfigTitle(_activeRuleset.DefaultMatchTitle ?? string.Empty, false);
                 InvokeAsyncStateHasChanged();
             }
         }

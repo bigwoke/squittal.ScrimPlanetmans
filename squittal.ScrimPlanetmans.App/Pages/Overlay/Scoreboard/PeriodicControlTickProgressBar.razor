@@ -120,9 +120,9 @@
     {
         MatchState = ScrimMatchEngine.GetMatchState();
 
-        IsPeriodPointsEnabled = ScrimMatchEngine.MatchConfiguration.EnablePeriodicFacilityControlRewards;
-        SecondsPerTick = ScrimMatchEngine.MatchConfiguration.PeriodicFacilityControlIntervalNonNullable;
-        PointsPerTick = ScrimMatchEngine.MatchConfiguration.PeriodicFacilityControlPointsNonNullable;
+        IsPeriodPointsEnabled = ScrimMatchEngine.ConfigEnablePeriodicFacilityControlRewards;
+        SecondsPerTick = ScrimMatchEngine.ConfigPeriodicFacilityControlInterval.GetValueOrDefault();
+        PointsPerTick = ScrimMatchEngine.ConfigPeriodicFacilityControlPoints.GetValueOrDefault();
 
         if (MatchState == MatchState.Stopped || MatchState == MatchState.Uninitialized || !IsPeriodPointsEnabled)
         {

@@ -13,26 +13,13 @@
 </div>
 
 @code {
-
-    private MatchConfiguration _matchConfiguration = new MatchConfiguration();
-
-    private string Title => _matchConfiguration.Title;
+    private string Title => ScrimMatchEngine.ConfigTitle;
 
     #region Initialization Methods
     protected override void OnInitialized()
     {
+        MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
         MessageService.RaiseMatchConfigurationUpdateEvent += ReceiveMatchConfigurationUpdateMessageEvent;
-
-        //if (ScrimMatchEngine.MatchConfiguration != null)
-        //{
-        //    _matchConfiguration = ScrimMatchEngine.MatchConfiguration;
-        //}
-        //else
-        //{
-        //    _matchConfiguration = new MatchConfiguration();
-        //}
-
-        _matchConfiguration = ScrimMatchEngine.MatchConfiguration;
     }
 
     public void Dispose()
@@ -43,13 +30,6 @@
 
     private void ReceiveMatchConfigurationUpdateMessageEvent(object sender, ScrimMessageEventArgs<MatchConfigurationUpdateMessage> e)
     {
-        var message = e.Message;
-
-        _matchConfiguration = message.MatchConfiguration;
-
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        InvokeAsync(StateHasChanged);
     }
 }

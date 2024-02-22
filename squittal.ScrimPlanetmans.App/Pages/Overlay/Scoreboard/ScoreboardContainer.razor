@@ -165,12 +165,12 @@
     {
         _matchState = ScrimMatchEngine.GetMatchState();
         _currentRound = ScrimMatchEngine.GetCurrentRound();
-        _shouldShowPointTarget = ScrimMatchEngine.MatchConfiguration.EndRoundOnPointValueReached;
-        _shouldShowMatchTimer = ScrimMatchEngine.MatchConfiguration.EnableRoundTimeLimit;
+        _shouldShowPointTarget = ScrimMatchEngine.ConfigEndRoundOnPointValueReached;
+        _shouldShowMatchTimer = ScrimMatchEngine.ConfigEnableRoundTimeLimit;
 
-        _isPeriodPointsEnabled = ScrimMatchEngine.MatchConfiguration.EnablePeriodicFacilityControlRewards;
-        _periodicPointsInterval = ScrimMatchEngine.MatchConfiguration.PeriodicFacilityControlIntervalNonNullable;
-        _periodicPointsValue = ScrimMatchEngine.MatchConfiguration.PeriodicFacilityControlPointsNonNullable;
+        _isPeriodPointsEnabled = ScrimMatchEngine.ConfigEnablePeriodicFacilityControlRewards;
+        _periodicPointsInterval = ScrimMatchEngine.ConfigPeriodicFacilityControlInterval.GetValueOrDefault();
+        _periodicPointsValue = ScrimMatchEngine.ConfigPeriodicFacilityControlPoints.GetValueOrDefault();
 
         _teamAlias1 = ScrimTeamsManager.GetTeamAliasDisplay(1);
         _teamAlias2 = ScrimTeamsManager.GetTeamAliasDisplay(2);
@@ -232,8 +232,8 @@
         _teamPoints1 = (teamPoints1 == null) ? 0 : teamPoints1.Value;
         _teamPoints2 = (teamPoints2 == null) ? 0 : teamPoints2.Value;
 
-        _shouldShowPointTarget = ScrimMatchEngine.MatchConfiguration.EndRoundOnPointValueReached;
-        var pointTarget = ScrimMatchEngine.MatchConfiguration.TargetPointValue;
+        _shouldShowPointTarget = ScrimMatchEngine.ConfigEndRoundOnPointValueReached;
+        var pointTarget = ScrimMatchEngine.ConfigTargetPointValue;
 
         //Console.WriteLine($"ScoreboardOverlay: TargetPointValue = {pointTarget}");
         //Console.WriteLine($"ScoreboardOverlay: _shouldShowPointTarget = {_shouldShowPointTarget}");
@@ -376,8 +376,8 @@
 
         if (pointsChanged)
         {
-            _shouldShowPointTarget = ScrimMatchEngine.MatchConfiguration.EndRoundOnPointValueReached;
-            var pointTarget = ScrimMatchEngine.MatchConfiguration.TargetPointValue;
+            _shouldShowPointTarget = ScrimMatchEngine.ConfigEndRoundOnPointValueReached;
+            var pointTarget = ScrimMatchEngine.ConfigTargetPointValue;
 
             //Console.WriteLine($"ScoreboardOverlay: TargetPointValue = {pointTarget}");
             //Console.WriteLine($"ScoreboardOverlay: _shouldShowPointTarget = {_shouldShowPointTarget}");

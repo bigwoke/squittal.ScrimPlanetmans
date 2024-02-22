@@ -50,7 +50,7 @@
         MessageService.RaiseScrimDeathActionEvent += ReceiveScrimDeathActionEvent;
         MessageService.RaiseScrimReviveActionEvent += ReceiveScrimReviveActionEvent;
 
-        _isShowingPointTarget = ScrimMatchEngine.MatchConfiguration.EndRoundOnPointValueReached;
+        _isShowingPointTarget = ScrimMatchEngine.ConfigEndRoundOnPointValueReached;
     }
 
     public void Dispose()
