@@ -9,15 +9,8 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 {
     public class MatchConfiguration : INotifyPropertyChanged
     {
-        public const string DefaultTitle = "PS2 Scrims";
-        public const int DefaultRoundSecondsTotal = 900; // 15 Minutes
         public const int DefaultWorldId = 19; // Jaeger
         public const int DefaultNoFacilityId = -1; // No facility
-        public const bool DefaultEndRoundOnFacilityCapture = false;
-        public const int DefaultTargetPointValue = 200;
-        public const int DefaultInitialPoints = 0;
-        public const int DefaultPeriodicFacilityControlPoints = 5;
-        public const int DefaultPeriodicFacilityControlInterval = 15;
 
         private readonly AutoResetEvent _autoEvent = new AutoResetEvent(true);
         private readonly AutoResetEvent _autoEventRoundSeconds = new AutoResetEvent(true);
@@ -29,10 +22,10 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
         private readonly AutoResetEvent _autoPeriodicFacilityControlPoints = new AutoResetEvent(true);
         private readonly AutoResetEvent _autoPeriodicFacilityControlInterval = new AutoResetEvent(true);
 
-        private string _title = DefaultTitle;
+        private string _title = Ruleset.DefaultMatchTitleValue;
         private bool _isManualTitle = false;
 
-        private int _roundSecondsTotal = DefaultRoundSecondsTotal;
+        private int _roundSecondsTotal = Ruleset.DefaultRoundLengthValue;
         private bool _isManualRoundSecondsTotal = false;
 
         private int _worldId = DefaultWorldId;
@@ -41,29 +34,28 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         private int _facilityId = DefaultNoFacilityId;
 
-        private bool _endRoundOnFacilityCapture = DefaultEndRoundOnFacilityCapture;
+        private bool _endRoundOnFacilityCapture = Ruleset.DefaultEndRoundOnFacilityCaptureValue;
         private bool _isManualEndRoundOnFacilityCapture = false;
 
-        private int? _targetPointValue = null;
+        private int? _targetPointValue;
         private bool _isManualTargetPointValue = false;
 
-        private int? _initialPoints = null;
+        private int? _initialPoints;
         private bool _isManualInitialPoints = false;
 
-        private int? _periodicFacilityControlPoints = null;
+        private int? _periodicFacilityControlPoints;
         private bool _isManualPeriodicFacilityControlPoints = false;
 
-        private int? _periodicFacilityControlInterval = null;
+        private int? _periodicFacilityControlInterval;
         private bool _isManualPeriodicFacilityControlInterval = false;
 
-        // TODO: get the default values for these from the ruleset manager or smth
-        private bool _enableRoundTimeLimit;
-        private TimerDirection? _roundTimerDirection = null;
-        private bool _endRoundOnPointValueReached;
-        private MatchWinCondition _matchWinCondition;
-        private RoundWinCondition _roundWinCondition;
-        private bool _enablePeriodicFacilityControlRewards = false;
-        private PointAttributionType? _periodFacilityControlPointAttributionType = null;
+        private bool _enableRoundTimeLimit = Ruleset.DefaultEnableRoundTimeLimit;
+        private TimerDirection? _roundTimerDirection = Ruleset.DefaultRoundTimerDirection;
+        private bool _endRoundOnPointValueReached = Ruleset.DefaultEndRoundOnPointValueReached;
+        private MatchWinCondition _matchWinCondition = Ruleset.DefaultMatchWinCondition;
+        private RoundWinCondition _roundWinCondition = Ruleset.DefaultRoundWinCondition;
+        private bool _enablePeriodicFacilityControlRewards = Ruleset.DefaultEnablePeriodicFacilityControlRewards;
+        private PointAttributionType? _periodFacilityControlPointAttributionType;
 
         public MatchConfiguration()
         {
@@ -529,12 +521,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public void ResetTargetPointValue()
-        {
-            TargetPointValue = DefaultTargetPointValue;
-            IsManualTargetPointValue = false;
-        }
-
         public bool TrySetInitialPoints(int? points, bool isManualValue)
         {
             _autoInitialPoints.WaitOne();
@@ -559,12 +545,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 _autoInitialPoints.Set();
                 return false;
             }
-        }
-
-        public void ResetInitialPoints()
-        {
-            InitialPoints = DefaultInitialPoints;
-            IsManualInitialPoints = false;
         }
 
         public bool TrySetPeriodicFacilityControlPoints(int? points, bool isManualValue)
@@ -593,12 +573,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public void ResetPeriodicFacilityControlPoints()
-        {
-            PeriodicFacilityControlPoints = DefaultPeriodicFacilityControlPoints;
-            IsManualPeriodicFacilityControlPoints = false;
-        }
-
         public bool TrySetPeriodicFacilityControlInterval(int? interval, bool isManualValue)
         {
             _autoPeriodicFacilityControlInterval.WaitOne();
@@ -625,12 +599,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public void ResetPeriodicFacilityControlInterval()
-        {
-            PeriodicFacilityControlInterval = DefaultPeriodicFacilityControlInterval;
-            IsManualPeriodicFacilityControlInterval = false;
-        }
-
         public bool TrySetEndRoundOnFacilityCapture(bool endOnCapture, bool isManualValue)
         {
             _autoEndRoundOnFacilityCapture.WaitOne();
@@ -655,12 +623,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 _autoEndRoundOnFacilityCapture.Set();
                 return false;
             }
-        }
-
-        public void ResetEndRoundOnFacilityCapture()
-        {
-            EndRoundOnFacilityCapture = DefaultEndRoundOnFacilityCapture;
-            IsManualEndRoundOnFacilityCapture = false;
         }
 
         public void ResetWorldId()

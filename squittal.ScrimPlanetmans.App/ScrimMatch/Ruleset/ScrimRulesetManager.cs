@@ -345,18 +345,18 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
                 storeRuleset = newRuleset;
             }
 
-            storeRuleset.DefaultMatchTitle = "PS2 Scrims";
             storeRuleset.IsDefault = true;
-            storeRuleset.DefaultEndRoundOnFacilityCapture = false;
+            storeRuleset.DefaultMatchTitle = Ruleset.DefaultMatchTitleValue;
+            storeRuleset.DefaultEndRoundOnFacilityCapture = Ruleset.DefaultEndRoundOnFacilityCaptureValue;
 
-            storeRuleset.EnableRoundTimeLimit = true;
-            storeRuleset.DefaultRoundLength = 900;
-            storeRuleset.RoundTimerDirection = TimerDirection.Up;
-            storeRuleset.DefaultEndRoundOnFacilityCapture = false;
-            storeRuleset.EndRoundOnPointValueReached = false;
-            storeRuleset.MatchWinCondition = MatchWinCondition.MostPoints;
-            storeRuleset.RoundWinCondition = RoundWinCondition.NotApplicable;
-            storeRuleset.EnablePeriodicFacilityControlRewards = false;
+            storeRuleset.EnableRoundTimeLimit = Ruleset.DefaultEnableRoundTimeLimit;
+            storeRuleset.DefaultRoundLength = Ruleset.DefaultRoundLengthValue;
+            storeRuleset.RoundTimerDirection = Ruleset.DefaultRoundTimerDirection;
+            storeRuleset.DefaultEndRoundOnFacilityCapture = Ruleset.DefaultEndRoundOnFacilityCaptureValue;
+            storeRuleset.EndRoundOnPointValueReached = Ruleset.DefaultEndRoundOnPointValueReached;
+            storeRuleset.MatchWinCondition = Ruleset.DefaultMatchWinCondition;
+            storeRuleset.RoundWinCondition = Ruleset.DefaultRoundWinCondition;
+            storeRuleset.EnablePeriodicFacilityControlRewards = Ruleset.DefaultEnablePeriodicFacilityControlRewards;
 
             // Get all async collection requests together
             var CollectionsTaskList = new List<Task>(); 
