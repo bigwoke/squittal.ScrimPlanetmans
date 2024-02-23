@@ -84,6 +84,8 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             _messageService.RaiseEndRoundCheckerMessage += async (s, e) => await OnEndRoundCheckerMessage(s, e);
 
             _roundEndChecker.Disable();
+
+            Task.Run(async () => TrySetMatchRuleset(await _rulesetManager.GetActiveRulesetAsync()));
         }
 
         public async Task Start()
@@ -183,22 +185,18 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             SendMatchConfigurationUpdateMessage();
         }
 
-        public void ConfigureMatch(MatchConfiguration configuration)
-        {
-            _matchConfiguration.CopyValues(configuration);
-
-            _wsMonitor.SetFacilitySubscription(_matchConfiguration.FacilityId);
-            _wsMonitor.SetWorldSubscription(_matchConfiguration.WorldId);
-
-            SendMatchConfigurationUpdateMessage();
-        }
-
         private bool TrySetMatchRuleset(Ruleset matchRuleset)
         {
             if (CanChangeRuleset())
             {
+                if (MatchRuleset?.Id != matchRuleset.Id)
+                {
+                    _matchConfiguration.ApplyRuleset(matchRuleset);
+                }
+
                 MatchRuleset = matchRuleset;
                 _matchDataService.CurrentMatchRulesetId = matchRuleset.Id;
+
                 return true;
             }
             else
@@ -688,13 +686,24 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             if (_isRunning)
             {
-
                 await EndRound();
             }
         }
 
         private void OnMatchConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(Config.WorldId))
+            {
+                _wsMonitor.SetWorldSubscription(Config.WorldId);
+            }
+            
+            if (e.PropertyName == nameof(Config.FacilityId))
+            {
+                _wsMonitor.SetFacilitySubscription(Config.FacilityId);
+            }
+
+            _logger.LogDebug("Engine match configuration property changed: {prop}", e.PropertyName);
+
             SendMatchConfigurationUpdateMessage();
         }
 

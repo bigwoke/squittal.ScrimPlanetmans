@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using squittal.ScrimPlanetmans.ScrimMatch.Models;
 using squittal.ScrimPlanetmans.ScrimMatch.Timers;
@@ -422,33 +423,22 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
         protected void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
         protected void OnPropertyChanged(string propertyName) => OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
-        public void CopyValues(MatchConfiguration sourceConfig)
+        public void ApplyRuleset(Ruleset ruleset)
         {
-            Title = sourceConfig.Title;
-            IsManualTitle = sourceConfig.IsManualTitle;
-            RoundSecondsTotal = sourceConfig.RoundSecondsTotal;
-            IsManualRoundSecondsTotal = sourceConfig.IsManualRoundSecondsTotal;
-            IsManualWorldId = sourceConfig.IsManualWorldId;
-            IsWorldIdSet = sourceConfig.IsWorldIdSet;
-            WorldId = sourceConfig.WorldId;
-            FacilityId = sourceConfig.FacilityId;
-            EndRoundOnFacilityCapture = sourceConfig.EndRoundOnFacilityCapture;
-            IsManualEndRoundOnFacilityCapture = sourceConfig.IsManualEndRoundOnFacilityCapture;
-            TargetPointValue = sourceConfig.TargetPointValue;
-            IsManualTargetPointValue = sourceConfig.IsManualTargetPointValue;
-            InitialPoints = sourceConfig.InitialPoints;
-            IsManualInitialPoints = sourceConfig.IsManualInitialPoints;
-            PeriodicFacilityControlPoints = sourceConfig.PeriodicFacilityControlPoints;
-            IsManualPeriodicFacilityControlPoints = sourceConfig.IsManualPeriodicFacilityControlPoints;
-            PeriodicFacilityControlInterval = sourceConfig.PeriodicFacilityControlInterval;
-            IsManualPeriodicFacilityControlInterval = sourceConfig.IsManualPeriodicFacilityControlInterval;
-            EnableRoundTimeLimit = sourceConfig.EnableRoundTimeLimit;
-            RoundTimerDirection = sourceConfig.RoundTimerDirection;
-            EndRoundOnPointValueReached = sourceConfig.EndRoundOnPointValueReached;
-            MatchWinCondition = sourceConfig.MatchWinCondition;
-            RoundWinCondition = sourceConfig.RoundWinCondition;
-            EnablePeriodicFacilityControlRewards = sourceConfig.EnablePeriodicFacilityControlRewards;
-            PeriodFacilityControlPointAttributionType = sourceConfig.PeriodFacilityControlPointAttributionType;
+            TrySetTitle(ruleset.DefaultMatchTitle, false);
+            TrySetRoundLength(ruleset.DefaultRoundLength, false);
+            TrySetTargetPointValue(ruleset.TargetPointValue, false);
+            TrySetInitialPoints(ruleset.InitialPoints, false);
+            TrySetPeriodicFacilityControlPoints(ruleset.PeriodicFacilityControlPoints, false);
+            TrySetPeriodicFacilityControlInterval(ruleset.PeriodicFacilityControlInterval, false);
+
+            EnableRoundTimeLimit = ruleset.EnableRoundTimeLimit;
+            RoundTimerDirection = ruleset.RoundTimerDirection;
+            EndRoundOnPointValueReached = ruleset.EndRoundOnPointValueReached;
+            MatchWinCondition = ruleset.MatchWinCondition;
+            RoundWinCondition = ruleset.RoundWinCondition;
+            EnablePeriodicFacilityControlRewards = ruleset.EnablePeriodicFacilityControlRewards;
+            PeriodFacilityControlPointAttributionType = ruleset.PeriodFacilityControlPointAttributionType;
         }
 
         public bool TrySetTitle(string title, bool isManualValue)
@@ -466,7 +456,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 IsManualTitle = true;
 
                 _autoEventMatchTitle.Set();
-
                 return true;
             }
             else if (!IsManualTitle)
@@ -474,13 +463,11 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 Title = title;
 
                 _autoEventMatchTitle.Set();
-
                 return true;
             }
             else
             {
                 _autoEventMatchTitle.Set();
-
                 return false;
             }
         }
@@ -500,7 +487,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 IsManualRoundSecondsTotal = true;
 
                 _autoEventRoundSeconds.Set();
-
                 return true;
             }
             else if (!IsManualRoundSecondsTotal)
@@ -508,13 +494,11 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 RoundSecondsTotal = seconds;
 
                 _autoEventRoundSeconds.Set();
-
                 return true;
             }
             else
             {
                 _autoEventRoundSeconds.Set();
-
                 return false;
             }
         }
@@ -598,7 +582,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             else if (!IsManualPeriodicFacilityControlPoints)
             {
                 PeriodicFacilityControlPoints = points;
-                IsManualPeriodicFacilityControlPoints = isManualValue;
 
                 _autoPeriodicFacilityControlPoints.Set();
                 return true;
@@ -631,7 +614,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             else if (!IsManualPeriodicFacilityControlInterval)
             {
                 PeriodicFacilityControlInterval = interval;
-                IsManualPeriodicFacilityControlInterval = isManualValue;
 
                 _autoPeriodicFacilityControlInterval.Set();
                 return true;
@@ -659,22 +641,18 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 IsManualEndRoundOnFacilityCapture = true;
 
                 _autoEndRoundOnFacilityCapture.Set();
-
                 return true;
             }
             else if (!IsManualEndRoundOnFacilityCapture)
             {
                 EndRoundOnFacilityCapture = endOnCapture;
-                IsManualEndRoundOnFacilityCapture = isManualValue;
 
                 _autoEndRoundOnFacilityCapture.Set();
-
                 return true;
             }
             else
             {
                 _autoEndRoundOnFacilityCapture.Set();
-
                 return false;
             }
         }
@@ -708,7 +686,6 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 IsWorldIdSet = true;
 
                 _autoEvent.Set();
-
                 return true;
             }
             else if (!IsManualWorldId && (!IsWorldIdSet || isRollBack))
@@ -717,20 +694,18 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
                 IsWorldIdSet = true;
 
                 _autoEvent.Set();
-
                 return true;
             }
             else
             {
                 _autoEvent.Set();
-
                 return false;
             }
         }
 
         public bool TrySetFacilityId(int facilityId)
         {
-            if (facilityId <= 0)
+            if (facilityId <= DefaultNoFacilityId)
             {
                 return false;
             }
