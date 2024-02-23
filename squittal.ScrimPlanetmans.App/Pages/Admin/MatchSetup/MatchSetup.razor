@@ -216,7 +216,7 @@
                         @if (_mapRegions != null && _zones != null)
                         {
                             <InputSelect style="margin-right: 5px; width: 250px; padding: 0.1rem;" Value="@ScrimMatchEngine.Config.FacilityId" ValueChanged="@((int i) => OnChangeFacilityId(i))" ValueExpression="@(() => ScrimMatchEngine.Config.FacilityId)">
-                                <option value=@NoFacilityIdValue>No Base</option>
+                                <option value=@MatchConfiguration.DefaultNoFacilityId>No Base</option>
 
                                 @foreach (Zone zone in _zones)
                                 {

@@ -118,7 +118,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             }
             _messageService.DisableLogging();
 
-            var previousWorldId = _matchConfiguration.WorldIdString;
+            var previousWorldId = _matchConfiguration.WorldId;
             var previousIsManualWorldId = _matchConfiguration.IsManualWorldId;
 
             var previousEndRoundOnFacilityCapture = _matchConfiguration.EndRoundOnFacilityCapture;
@@ -346,7 +346,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             SendMatchStateUpdateMessage();
 
-            Console.WriteLine($"Match Configuration Settings:\n            Title: {_matchConfiguration.Title} (IsManual={_matchConfiguration.IsManualTitle})\n            Round Length: {_matchConfiguration.RoundSecondsTotal} (IsManual={_matchConfiguration.IsManualRoundSecondsTotal})\n            Point Target: {_matchConfiguration.TargetPointValue} (IsManual={_matchConfiguration.IsManualTargetPointValue})\n            Periodic Control Points: {_matchConfiguration.PeriodicFacilityControlPoints} (IsManual={_matchConfiguration.IsManualPeriodicFacilityControlPoints})\n            Periodic Control Interval: {_matchConfiguration.PeriodicFacilityControlInterval} (IsManual={_matchConfiguration.IsManualPeriodicFacilityControlInterval})\n            World ID: {_matchConfiguration.WorldIdString} (IsManual={_matchConfiguration.IsManualWorldId})\n            Facility ID: {_matchConfiguration.FacilityIdString}\n            End Round on Capture?: {_matchConfiguration.EndRoundOnFacilityCapture} (IsManual={_matchConfiguration.IsManualEndRoundOnFacilityCapture})");
+            Console.WriteLine($"Match Configuration Settings:\n            Title: {_matchConfiguration.Title} (IsManual={_matchConfiguration.IsManualTitle})\n            Round Length: {_matchConfiguration.RoundSecondsTotal} (IsManual={_matchConfiguration.IsManualRoundSecondsTotal})\n            Point Target: {_matchConfiguration.TargetPointValue} (IsManual={_matchConfiguration.IsManualTargetPointValue})\n            Periodic Control Points: {_matchConfiguration.PeriodicFacilityControlPoints} (IsManual={_matchConfiguration.IsManualPeriodicFacilityControlPoints})\n            Periodic Control Interval: {_matchConfiguration.PeriodicFacilityControlInterval} (IsManual={_matchConfiguration.IsManualPeriodicFacilityControlInterval})\n            World ID: {_matchConfiguration.WorldId} (IsManual={_matchConfiguration.IsManualWorldId})\n            Facility ID: {_matchConfiguration.FacilityId}\n            End Round on Capture?: {_matchConfiguration.EndRoundOnFacilityCapture} (IsManual={_matchConfiguration.IsManualEndRoundOnFacilityCapture})");
         }
 
         public void PauseRound()

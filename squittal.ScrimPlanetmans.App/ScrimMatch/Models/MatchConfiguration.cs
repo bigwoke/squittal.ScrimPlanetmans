@@ -8,6 +8,16 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 {
     public class MatchConfiguration : INotifyPropertyChanged
     {
+        public const string DefaultTitle = "PS2 Scrims";
+        public const int DefaultRoundSecondsTotal = 900; // 15 Minutes
+        public const int DefaultWorldId = 19; // Jaeger
+        public const int DefaultNoFacilityId = -1; // No facility
+        public const bool DefaultEndRoundOnFacilityCapture = false;
+        public const int DefaultTargetPointValue = 200;
+        public const int DefaultInitialPoints = 0;
+        public const int DefaultPeriodicFacilityControlPoints = 5;
+        public const int DefaultPeriodicFacilityControlInterval = 15;
+
         private readonly AutoResetEvent _autoEvent = new AutoResetEvent(true);
         private readonly AutoResetEvent _autoEventRoundSeconds = new AutoResetEvent(true);
         private readonly AutoResetEvent _autoEventMatchTitle = new AutoResetEvent(true);
@@ -18,19 +28,19 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
         private readonly AutoResetEvent _autoPeriodicFacilityControlPoints = new AutoResetEvent(true);
         private readonly AutoResetEvent _autoPeriodicFacilityControlInterval = new AutoResetEvent(true);
 
-        private string _title = "PS2 Scrims";
+        private string _title = DefaultTitle;
         private bool _isManualTitle = false;
 
-        private int _roundSecondsTotal = 900;
+        private int _roundSecondsTotal = DefaultRoundSecondsTotal;
         private bool _isManualRoundSecondsTotal = false;
 
-        private string _worldIdString = "19";
+        private int _worldId = DefaultWorldId;
         private bool _isManualWorldId = false;
         private bool _isWorldIdSet = false;
 
-        private string _facilityIdString = "0";
+        private int _facilityId = DefaultNoFacilityId;
 
-        private bool _endRoundOnFacilityCapture = false;
+        private bool _endRoundOnFacilityCapture = DefaultEndRoundOnFacilityCapture;
         private bool _isManualEndRoundOnFacilityCapture = false;
 
         private int? _targetPointValue = null;
@@ -130,16 +140,15 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public int WorldId => GetWorldIdFromString();
-        public string WorldIdString
+        public int WorldId
         {
-            get => _worldIdString;
+            get => _worldId;
             set
             {
-                if (_worldIdString != value)
+                if (_worldId != value)
                 {
-                    _worldIdString = value;
-                    OnPropertyChanged(nameof(WorldIdString));
+                    _worldId = value;
+                    OnPropertyChanged(nameof(WorldId));
                 }
             }
         }
@@ -170,16 +179,15 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public int FacilityId => GetFacilityIdFromString();
-        public string FacilityIdString
+        public int FacilityId
         {
-            get => _facilityIdString;
+            get => _facilityId;
             set
             {
-                if (_facilityIdString != value)
+                if (_facilityId != value)
                 {
-                    _facilityIdString = value;
-                    OnPropertyChanged(nameof(FacilityIdString));
+                    _facilityId = value;
+                    OnPropertyChanged(nameof(FacilityId));
                 }
             }
         }
@@ -422,8 +430,8 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             IsManualRoundSecondsTotal = sourceConfig.IsManualRoundSecondsTotal;
             IsManualWorldId = sourceConfig.IsManualWorldId;
             IsWorldIdSet = sourceConfig.IsWorldIdSet;
-            WorldIdString = sourceConfig.WorldIdString;
-            FacilityIdString = sourceConfig.FacilityIdString;
+            WorldId = sourceConfig.WorldId;
+            FacilityId = sourceConfig.FacilityId;
             EndRoundOnFacilityCapture = sourceConfig.EndRoundOnFacilityCapture;
             IsManualEndRoundOnFacilityCapture = sourceConfig.IsManualEndRoundOnFacilityCapture;
             TargetPointValue = sourceConfig.TargetPointValue;
@@ -539,7 +547,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         public void ResetTargetPointValue()
         {
-            TargetPointValue = 200;
+            TargetPointValue = DefaultTargetPointValue;
             IsManualTargetPointValue = false;
         }
 
@@ -571,7 +579,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         public void ResetInitialPoints()
         {
-            InitialPoints = 0;
+            InitialPoints = DefaultInitialPoints;
             IsManualInitialPoints = false;
         }
 
@@ -604,7 +612,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         public void ResetPeriodicFacilityControlPoints()
         {
-            PeriodicFacilityControlPoints = 5; // TODO: const these
+            PeriodicFacilityControlPoints = DefaultPeriodicFacilityControlPoints;
             IsManualPeriodicFacilityControlPoints = false;
         }
 
@@ -637,7 +645,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         public void ResetPeriodicFacilityControlInterval()
         {
-            PeriodicFacilityControlInterval = 15;
+            PeriodicFacilityControlInterval = DefaultPeriodicFacilityControlInterval;
             IsManualPeriodicFacilityControlInterval = false;
         }
 
@@ -673,13 +681,13 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
 
         public void ResetEndRoundOnFacilityCapture()
         {
-            EndRoundOnFacilityCapture = false;
+            EndRoundOnFacilityCapture = DefaultEndRoundOnFacilityCapture;
             IsManualEndRoundOnFacilityCapture = false;
         }
 
         public void ResetWorldId()
         {
-            WorldIdString = "19";
+            WorldId = DefaultWorldId;
             IsManualWorldId = false;
             IsWorldIdSet = false;
         }
@@ -690,16 +698,12 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             {
                 return false;
             }
-            return TrySetWorldId(worldId.ToString(), isManualValue, isRollBack);
-        }
 
-        public bool TrySetWorldId(string worldIdString, bool isManualValue = false, bool isRollBack = false)
-        {            
             _autoEvent.WaitOne();
 
             if (isManualValue)
             {
-                WorldIdString = worldIdString;
+                WorldId = worldId;
                 IsManualWorldId = true;
                 IsWorldIdSet = true;
 
@@ -709,8 +713,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
             else if (!IsManualWorldId && (!IsWorldIdSet || isRollBack))
             {
-                WorldIdString = worldIdString;
-
+                WorldId = worldId;
                 IsWorldIdSet = true;
 
                 _autoEvent.Set();
@@ -725,38 +728,19 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
             }
         }
 
-        public bool TrySetFacilityId(string facilityIdString)
+        public bool TrySetFacilityId(int facilityId)
         {
+            if (facilityId <= 0)
+            {
+                return false;
+            }
+
             _autoEvent.WaitOne();
 
-            FacilityIdString = facilityIdString;
+            FacilityId = facilityId;
 
             _autoEvent.Set();
             return true;
-        }
-
-        private int GetFacilityIdFromString()
-        {
-            if (int.TryParse(FacilityIdString, out int intId))
-            {
-                return intId;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-
-        private int GetWorldIdFromString()
-        {
-            if (int.TryParse(WorldIdString, out int intId))
-            {
-                return intId;
-            }
-            else
-            {
-                return 19; // Default to Jaeger
-            }
         }
     }
 }

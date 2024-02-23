@@ -14,23 +14,22 @@
 }
 else
 {
-<EditForm Model="@_matchConfiguration">
-        <InputSelect class="btn-sm" style="margin-right: 5px; width: 249px;"  @bind-Value=@_matchConfiguration.FacilityIdString>
+    <EditForm Model="@_matchConfiguration">
+        <InputSelect class="btn-sm" style="margin-right: 5px; width: 249px;" @bind-Value=@_matchConfiguration.FacilityId>
 
-            <option value=@_noFacilitIdValue>No Base</option>
+            <option value=@MatchConfiguration.DefaultNoFacilityId>No Base</option>
 
-            @foreach (var zone in _mapZones)
+            @foreach (int zoneId in _mapZones)
             {
-                <optgroup label="@(_zones.Where(z => zone == z.Id).Select(z => z.Name).FirstOrDefault())" style="background-color: var(--sq-bg-white-unlit); color: var(--sq-pink); font-size: 1rem;"/>
+                <optgroup label="@(_zones.Where(z => zoneId == z.Id).Select(z => z.Name).FirstOrDefault())" style="background-color: var(--sq-bg-white-unlit); color: var(--sq-pink); font-size: 1rem;"/>
 
-                @foreach (var region in _mapRegions.Where(r => r.ZoneId == zone))
+                @foreach (MapRegion region in _mapRegions.Where(r => r.ZoneId == zoneId))
                 {
                     <option value=@region.Id label="@region.FacilityName">@region.FacilityName</option>
                 }
             }
         </InputSelect>
-    @*</div>*@
-</EditForm>
+    </EditForm>
 }
 
 @code {
@@ -40,11 +39,7 @@ else
 
     private List<Zone> _zones { get; set; } = new List<Zone>();
 
-    private int _selectedFacilityId { get; set; }
-
     private MatchConfiguration _matchConfiguration { get; set; } = new MatchConfiguration();
-
-    private string _noFacilitIdValue { get; set; } = "-1";
 
     protected override async Task OnInitializedAsync()
     {

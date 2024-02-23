@@ -22,8 +22,6 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #endregion
 
         #region Facility & World Select List Variables
-        private const string NoFacilityIdValue = "0";
-
         private IOrderedEnumerable<MapRegion> _mapRegions;
         private IOrderedEnumerable<World> _worlds;
         private IEnumerable<Zone> _zones;
@@ -116,7 +114,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 // Preserve WorldId settings when changing ruleset
                 if (ScrimMatchEngine.Config.IsWorldIdSet)
                 {
-                    newMatchConfiguration.TrySetWorldId(ScrimMatchEngine.Config.WorldId.ToString(), ScrimMatchEngine.Config.IsManualWorldId);
+                    newMatchConfiguration.TrySetWorldId(ScrimMatchEngine.Config.WorldId, ScrimMatchEngine.Config.IsManualWorldId);
                 }
 
                 if (ScrimMatchEngine.Config.IsManualRoundSecondsTotal)
@@ -147,7 +145,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 // Preserve facility id on page reload
                 if (ScrimMatchEngine.Config.FacilityId != -1)
                 {
-                    newMatchConfiguration.FacilityIdString = ScrimMatchEngine.Config.FacilityId.ToString();
+                    newMatchConfiguration.TrySetFacilityId(ScrimMatchEngine.Config.FacilityId);
                 }
 
                 // TODO: carry over old settings depending on what the Round Win Condition is
@@ -339,7 +337,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             if (newFacilityId != oldFacilityId)
             {
-                ScrimMatchEngine.Config.TrySetFacilityId(newFacilityId.ToString());
+                ScrimMatchEngine.Config.TrySetFacilityId(newFacilityId);
             }
         }
 
