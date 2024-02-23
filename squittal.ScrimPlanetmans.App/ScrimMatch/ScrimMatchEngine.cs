@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,15 +27,14 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
         private readonly IPeriodicPointsTimer _periodicTimer;
         private readonly IScrimRoundEndCheckerService _roundEndChecker;
 
-        private MatchConfiguration _matchConfiguration = new MatchConfiguration();
-        public Ruleset MatchRuleset { get; private set; }
+        private MatchConfiguration _matchConfiguration = new();
 
+        public MatchConfiguration Config => _matchConfiguration;
+        public Ruleset MatchRuleset { get; private set; }
         public int CurrentSeriesMatch { get; private set; } = 0;
         private int? FacilityControlTeamOrdinal { get; set; }
 
-
         private bool _isRunning = false;
-
         private int _currentRound = 0;
 
         private MatchTimerTickMessage _latestTimerTickMessage;
@@ -71,6 +71,8 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             _logger = logger;
 
+            _matchConfiguration.PropertyChanged += OnMatchConfigurationPropertyChanged;
+
             _messageService.RaiseMatchTimerTickEvent += OnMatchTimerTick;
             _messageService.RaisePeriodicPointsTimerTickEvent += async (s, e) => await OnPeriodiocPointsTimerTick(s, e);
 
@@ -82,126 +84,6 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             _messageService.RaiseEndRoundCheckerMessage += async (s, e) => await OnEndRoundCheckerMessage(s, e);
 
             _roundEndChecker.Disable();
-        }
-
-        public string ConfigTitle => _matchConfiguration.Title;
-        public bool ConfigIsManualTitle => _matchConfiguration.IsManualTitle;
-        public int ConfigRoundSecondsTotal => _matchConfiguration.RoundSecondsTotal;
-        public bool ConfigIsManualRoundSecondsTotal => _matchConfiguration.IsManualRoundSecondsTotal;
-        public int? ConfigTargetPointValue => _matchConfiguration.TargetPointValue;
-        public bool ConfigIsManualTargetPointValue => _matchConfiguration.IsManualTargetPointValue;
-        public int? ConfigInitialPoints => _matchConfiguration.InitialPoints;
-        public int? ConfigPeriodicFacilityControlPoints => _matchConfiguration.PeriodicFacilityControlPoints;
-        public bool ConfigIsManualPeriodicFacilityControlPoints => _matchConfiguration.IsManualPeriodicFacilityControlPoints;
-        public int? ConfigPeriodicFacilityControlInterval => _matchConfiguration.PeriodicFacilityControlInterval;
-        public bool ConfigIsManualPeriodicFacilityControlInterval => _matchConfiguration.IsManualPeriodicFacilityControlInterval;
-
-        public int ConfigWorldId => _matchConfiguration.WorldId;
-        public bool ConfigIsWorldIdSet => _matchConfiguration.IsWorldIdSet;
-        public bool ConfigIsManualWorldId => _matchConfiguration.IsManualWorldId;
-        public int ConfigFacilityId => _matchConfiguration.FacilityId;
-        public bool ConfigEndRoundOnFacilityCapture => _matchConfiguration.EndRoundOnFacilityCapture;
-        public bool ConfigIsManualEndRoundOnFacilityCapture => _matchConfiguration.IsManualEndRoundOnFacilityCapture;
-
-        public bool ConfigEnableRoundTimeLimit => _matchConfiguration.EnableRoundTimeLimit;
-        public bool ConfigEndRoundOnPointValueReached => _matchConfiguration.EndRoundOnPointValueReached;
-        public bool ConfigEnablePeriodicFacilityControlRewards => _matchConfiguration.EnablePeriodicFacilityControlRewards;
-
-        public bool TrySetConfigTitle(string title, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetTitle(title, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigRoundLength(int seconds, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetRoundLength(seconds, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigTargetPointValue(int? targetPointValue, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetTargetPointValue(targetPointValue, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigInitialPoints(int? initialPoints, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetInitialPoints(initialPoints, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigPeriodicFacilityControlPoints(int? points, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetPeriodicFacilityControlPoints(points, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigPeriodicFacilityControlInterval(int? interval, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetPeriodicFacilityControlInterval(interval, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigEndRoundOnFacilityCapture(bool endOnCapture, bool isManualValue)
-        {
-            bool success = _matchConfiguration.TrySetEndRoundOnFacilityCapture(endOnCapture, isManualValue);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-
-        public void ResetConfigWorldId()
-        {
-            _matchConfiguration.ResetWorldId();
-            SendMatchConfigurationUpdateMessage();
-        }
-        public bool TrySetConfigWorldId(int worldId, bool isManualValue = false, bool isRollBack = false)
-        {
-            bool success = _matchConfiguration.TrySetWorldId(worldId, isManualValue, isRollBack);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigWorldId(string worldId, bool isManualValue = false, bool isRollBack = false)
-        {
-            bool success = _matchConfiguration.TrySetWorldId(worldId, isManualValue, isRollBack);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
-        }
-        public bool TrySetConfigFacilityId(string facilityId)
-        {
-            bool success = _matchConfiguration.TrySetFacilityId(facilityId);
-            if (success)
-            {
-                SendMatchConfigurationUpdateMessage();
-            }
-            return success;
         }
 
         public async Task Start()
@@ -809,6 +691,11 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
                 await EndRound();
             }
+        }
+
+        private void OnMatchConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SendMatchConfigurationUpdateMessage();
         }
 
         #region Outbound Messages

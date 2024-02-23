@@ -48,13 +48,13 @@
             <div class="header-card-container default sans-serif-font">
 
                 <div style="display: grid; grid-template-columns: 1fr 115px;">
-                    @if (string.IsNullOrWhiteSpace(ScrimMatchEngine.ConfigTitle))
+                    @if (string.IsNullOrWhiteSpace(ScrimMatchEngine.Config.Title))
                     {
                         <h5>@(_currentRound == 0 ? string.Empty : $"Round {_currentRound}:") @Enum.GetName(typeof(MatchState), _matchState)</h5>
                     }
                     else
                     {
-                        <h5>@(ScrimMatchEngine.ConfigTitle)@(_currentRound == 0 ? string.Empty : $" - Round {_currentRound}"): @Enum.GetName(typeof(MatchState), _matchState)</h5>
+                        <h5>@(ScrimMatchEngine.Config.Title)@(_currentRound == 0 ? string.Empty : $" - Round {_currentRound}"): @Enum.GetName(typeof(MatchState), _matchState)</h5>
                     }
 
                     <div class="mono-font" style="font-size: 18px; text-align: right;">
@@ -164,37 +164,37 @@
 
                     <p style="margin-bottom: 0.5rem;">
                         <span style="width: 110px; padding-right: 4px; display: inline-block;">Match Title:</span>
-                        <InputText id="matchTitle" Value="@ScrimMatchEngine.ConfigTitle" ValueChanged="@((string s) => OnChangeMatchTitle(s))" ValueExpression="@(() => ScrimMatchEngine.ConfigTitle)" style="width: 250px;" maxlength="100" pattern="(?!.)$|^([A-Za-z0-9()\[\]\-_'.][ ]{0,1}){1,49}[A-Za-z0-9()\[\]\-_'.]$" />
+                        <InputText id="matchTitle" Value="@ScrimMatchEngine.Config.Title" ValueChanged="@((string s) => OnChangeMatchTitle(s))" ValueExpression="@(() => ScrimMatchEngine.Config.Title)" style="width: 250px;" maxlength="100" pattern="(?!.)$|^([A-Za-z0-9()\[\]\-_'.][ ]{0,1}){1,49}[A-Za-z0-9()\[\]\-_'.]$" />
                     </p>
 
-                    @if (ScrimMatchEngine.ConfigEnableRoundTimeLimit)
+                    @if (ScrimMatchEngine.Config.EnableRoundTimeLimit)
                     {
                         <p style="margin-bottom: 0.5rem;">
                             <span style="width: 110px; padding-right: 4px; display: inline-block;">Round Length:</span>
-                            <InputNumber min="1" id="roundSecondsTotal" Value="@ScrimMatchEngine.ConfigRoundSecondsTotal" ValueChanged="@((int s) => OnChangeRoundLength(s))" ValueExpression="@(() => ScrimMatchEngine.ConfigRoundSecondsTotal)"/>
+                            <InputNumber min="1" id="roundSecondsTotal" Value="@ScrimMatchEngine.Config.RoundSecondsTotal" ValueChanged="@((int s) => OnChangeRoundLength(s))" ValueExpression="@(() => ScrimMatchEngine.Config.RoundSecondsTotal)"/>
                             <span style="padding-left: 4px; width: 64px;">seconds</span>
                         </p>
                     }
 
-                    @if (ScrimMatchEngine.ConfigEndRoundOnPointValueReached)
+                    @if (ScrimMatchEngine.Config.EndRoundOnPointValueReached)
                     {
                         <p style="margin-bottom: 0.5rem;">
                             <span style="width: 110px; padding-right: 4px; display: inline-block;">Point Target:</span>
-                            <InputNumber min="1" id="roundPointTarget" TValue="int?" Value="@(ScrimMatchEngine.ConfigTargetPointValue)" ValueChanged="@((int? p) => OnChangeTargetPointValue(p))" ValueExpression="@(() => ScrimMatchEngine.ConfigTargetPointValue)" />
+                            <InputNumber min="1" id="roundPointTarget" TValue="int?" Value="@(ScrimMatchEngine.Config.TargetPointValue)" ValueChanged="@((int? p) => OnChangeTargetPointValue(p))" ValueExpression="@(() => ScrimMatchEngine.Config.TargetPointValue)" />
                         </p>
                     }
 
-                    @if (ScrimMatchEngine.ConfigEnablePeriodicFacilityControlRewards)
+                    @if (ScrimMatchEngine.Config.EnablePeriodicFacilityControlRewards)
                     {
                         <div style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
                             <p style="font-weight: 500; margin-bottom: 0;">Periodic Facility Control Points</p>
                             <p style="margin-bottom: 0.5rem;">
                                 <span style="width: 110px; padding-right: 4px; display: inline-block;">Points:</span>
-                                <InputNumber min="1" type="text" id="periodicControlPoints" TValue="int?" Value="@(ScrimMatchEngine.ConfigPeriodicFacilityControlPoints)" ValueChanged="@((int? p) => OnChangePeriodicControlPoints(p))" ValueExpression="@(() => ScrimMatchEngine.ConfigPeriodicFacilityControlPoints)" />
+                                <InputNumber min="1" type="text" id="periodicControlPoints" TValue="int?" Value="@(ScrimMatchEngine.Config.PeriodicFacilityControlPoints)" ValueChanged="@((int? p) => OnChangePeriodicControlPoints(p))" ValueExpression="@(() => ScrimMatchEngine.Config.PeriodicFacilityControlPoints)" />
                             </p>
                             <p style="margin-bottom: 0.5rem;">
                                 <span style="width: 110px; padding-right: 4px; display: inline-block;">Interval:</span>
-                                <InputNumber min="1" type="text" id="periodicControlInterval" TValue="int?" Value="@(ScrimMatchEngine.ConfigPeriodicFacilityControlInterval)" ValueChanged="@((int? s) => OnChangePeriodicControlPointsInterval(s))" ValueExpression="@(() => ScrimMatchEngine.ConfigPeriodicFacilityControlInterval)" />
+                                <InputNumber min="1" type="text" id="periodicControlInterval" TValue="int?" Value="@(ScrimMatchEngine.Config.PeriodicFacilityControlInterval)" ValueChanged="@((int? s) => OnChangePeriodicControlPointsInterval(s))" ValueExpression="@(() => ScrimMatchEngine.Config.PeriodicFacilityControlInterval)" />
                                 <span style="padding-left: 4px; width: 64px;">seconds</span>
                             </p>
                         </div>
@@ -205,7 +205,7 @@
 
                         @if (_worlds != null)
                         {
-                            <InputSelect TValue="int" style="margin-right: 5px; width: 125px; padding: 0.1rem;" Value="@ScrimMatchEngine.ConfigWorldId" ValueChanged="@((int i) => OnChangeWorldId(i))" ValueExpression="@(() => ScrimMatchEngine.ConfigWorldId)">
+                            <InputSelect TValue="int" style="margin-right: 5px; width: 125px; padding: 0.1rem;" Value="@ScrimMatchEngine.Config.WorldId" ValueChanged="@((int i) => OnChangeWorldId(i))" ValueExpression="@(() => ScrimMatchEngine.Config.WorldId)">
                                 @foreach (World world in _worlds)
                                 {
                                     <option value="@world.Id">@world.Name (@world.Id)</option>
@@ -215,8 +215,8 @@
 
                         @if (_mapRegions != null && _zones != null)
                         {
-                            <InputSelect style="margin-right: 5px; width: 250px; padding: 0.1rem;" Value="@ScrimMatchEngine.ConfigFacilityId" ValueChanged="@((int i) => OnChangeFacilityId(i))" ValueExpression="@(() => ScrimMatchEngine.ConfigFacilityId)">
-                                <option value=@_noFacilityIdValue>No Base</option>
+                            <InputSelect style="margin-right: 5px; width: 250px; padding: 0.1rem;" Value="@ScrimMatchEngine.Config.FacilityId" ValueChanged="@((int i) => OnChangeFacilityId(i))" ValueExpression="@(() => ScrimMatchEngine.Config.FacilityId)">
+                                <option value=@NoFacilityIdValue>No Base</option>
 
                                 @foreach (Zone zone in _zones)
                                 {
@@ -231,10 +231,10 @@
                         }
                     </div>
 
-                    @if (!ScrimMatchEngine.ConfigEnablePeriodicFacilityControlRewards)
+                    @if (!ScrimMatchEngine.Config.EnablePeriodicFacilityControlRewards)
                     {
                         <p style="margin-bottom: 0.2rem; margin-top: 8px;">
-                            <InputCheckbox id="endRoundOnCapture" Value="@ScrimMatchEngine.ConfigEndRoundOnFacilityCapture" ValueChanged="@((bool b) => OnChangeEndRoundOnFacilityCapture(b))" ValueExpression="@(() => ScrimMatchEngine.ConfigEndRoundOnFacilityCapture)" style="position: relative; top: 1px;" />
+                            <InputCheckbox id="endRoundOnCapture" Value="@ScrimMatchEngine.Config.EndRoundOnFacilityCapture" ValueChanged="@((bool b) => OnChangeEndRoundOnFacilityCapture(b))" ValueExpression="@(() => ScrimMatchEngine.Config.EndRoundOnFacilityCapture)" style="position: relative; top: 1px;" />
                             <span style="padding-left: 8px;">End Round on Base Capture</span>
                         </p>
                     }
@@ -248,10 +248,10 @@
                         </p>
                     }
 
-                    @if (ScrimMatchEngine.ConfigTargetPointValue.HasValue && ScrimMatchEngine.ConfigTargetPointValue.Value > 0)
+                    @if (ScrimMatchEngine.Config.TargetPointValue.HasValue && ScrimMatchEngine.Config.TargetPointValue.Value > 0)
                     {
                         <p style="margin: 0.5rem 0;">
-                            First to <span style="font-weight: 500;">@(ScrimMatchEngine.ConfigTargetPointValue.Value)</span> points
+                            First to <span style="font-weight: 500;">@(ScrimMatchEngine.Config.TargetPointValue.Value)</span> points
                         </p>
                     }
                 }

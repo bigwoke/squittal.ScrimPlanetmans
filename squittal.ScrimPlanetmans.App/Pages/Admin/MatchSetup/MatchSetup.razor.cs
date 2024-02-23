@@ -22,7 +22,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #endregion
 
         #region Facility & World Select List Variables
-        private const string _noFacilityIdValue = "-1";
+        private const string NoFacilityIdValue = "0";
 
         private IOrderedEnumerable<MapRegion> _mapRegions;
         private IOrderedEnumerable<World> _worlds;
@@ -108,46 +108,46 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 // TODO: probably move this to SME
                 MatchConfiguration newMatchConfiguration = new(_ruleset);
 
-                if (ScrimMatchEngine.ConfigIsManualTitle)
+                if (ScrimMatchEngine.Config.IsManualTitle)
                 {
-                    newMatchConfiguration.TrySetTitle(ScrimMatchEngine.ConfigTitle, true);
+                    newMatchConfiguration.TrySetTitle(ScrimMatchEngine.Config.Title, true);
                 }
 
                 // Preserve WorldId settings when changing ruleset
-                if (ScrimMatchEngine.ConfigIsWorldIdSet)
+                if (ScrimMatchEngine.Config.IsWorldIdSet)
                 {
-                    newMatchConfiguration.TrySetWorldId(ScrimMatchEngine.ConfigWorldId.ToString(), ScrimMatchEngine.ConfigIsManualWorldId);
+                    newMatchConfiguration.TrySetWorldId(ScrimMatchEngine.Config.WorldId.ToString(), ScrimMatchEngine.Config.IsManualWorldId);
                 }
 
-                if (ScrimMatchEngine.ConfigIsManualRoundSecondsTotal)
+                if (ScrimMatchEngine.Config.IsManualRoundSecondsTotal)
                 {
-                    newMatchConfiguration.TrySetRoundLength(ScrimMatchEngine.ConfigRoundSecondsTotal, true);
+                    newMatchConfiguration.TrySetRoundLength(ScrimMatchEngine.Config.RoundSecondsTotal, true);
                 }
 
-                if (ScrimMatchEngine.ConfigIsManualTargetPointValue)
+                if (ScrimMatchEngine.Config.IsManualTargetPointValue)
                 {
-                    newMatchConfiguration.TrySetTargetPointValue(ScrimMatchEngine.ConfigTargetPointValue, true);
+                    newMatchConfiguration.TrySetTargetPointValue(ScrimMatchEngine.Config.TargetPointValue, true);
                 }
 
-                if (ScrimMatchEngine.ConfigIsManualPeriodicFacilityControlPoints)
+                if (ScrimMatchEngine.Config.IsManualPeriodicFacilityControlPoints)
                 {
-                    newMatchConfiguration.TrySetPeriodicFacilityControlPoints(ScrimMatchEngine.ConfigPeriodicFacilityControlPoints, true);
+                    newMatchConfiguration.TrySetPeriodicFacilityControlPoints(ScrimMatchEngine.Config.PeriodicFacilityControlPoints, true);
                 }
 
-                if (ScrimMatchEngine.ConfigIsManualPeriodicFacilityControlInterval)
+                if (ScrimMatchEngine.Config.IsManualPeriodicFacilityControlInterval)
                 {
-                    newMatchConfiguration.TrySetPeriodicFacilityControlInterval(ScrimMatchEngine.ConfigPeriodicFacilityControlInterval, true);
+                    newMatchConfiguration.TrySetPeriodicFacilityControlInterval(ScrimMatchEngine.Config.PeriodicFacilityControlInterval, true);
                 }
 
-                if (ScrimMatchEngine.ConfigIsManualEndRoundOnFacilityCapture)
+                if (ScrimMatchEngine.Config.IsManualEndRoundOnFacilityCapture)
                 {
-                    newMatchConfiguration.TrySetEndRoundOnFacilityCapture(ScrimMatchEngine.ConfigEndRoundOnFacilityCapture, true);
+                    newMatchConfiguration.TrySetEndRoundOnFacilityCapture(ScrimMatchEngine.Config.EndRoundOnFacilityCapture, true);
                 }
 
                 // Preserve facility id on page reload
-                if (ScrimMatchEngine.ConfigFacilityId != -1)
+                if (ScrimMatchEngine.Config.FacilityId != -1)
                 {
-                    newMatchConfiguration.FacilityIdString = ScrimMatchEngine.ConfigFacilityId.ToString();
+                    newMatchConfiguration.FacilityIdString = ScrimMatchEngine.Config.FacilityId.ToString();
                 }
 
                 // TODO: carry over old settings depending on what the Round Win Condition is
@@ -248,8 +248,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 await Task.Run(() => ScrimMatchEngine.ClearMatch(isRematch));
 
-                ScrimMatchEngine.TrySetConfigRoundLength(_ruleset.DefaultRoundLength, false);
-                ScrimMatchEngine.TrySetConfigTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
+                ScrimMatchEngine.Config.TrySetRoundLength(_ruleset.DefaultRoundLength, false);
+                ScrimMatchEngine.Config.TrySetTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
             }
 
             _isClearingMatch = false;
@@ -275,102 +275,81 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         #region Form Handling
         private void OnChangeMatchTitle(string newTitle)
         {
-            string oldTitle = ScrimMatchEngine.ConfigTitle;
+            string oldTitle = ScrimMatchEngine.Config.Title;
 
             if (newTitle != oldTitle)
             {
-                if (ScrimMatchEngine.TrySetConfigTitle(newTitle, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetTitle(newTitle, true);
             }
         }
 
         private void OnChangeRoundLength(int newLength)
         {
-            int oldLength = ScrimMatchEngine.ConfigRoundSecondsTotal;
+            int oldLength = ScrimMatchEngine.Config.RoundSecondsTotal;
 
             if (newLength != oldLength)
             {
-                if (ScrimMatchEngine.TrySetConfigRoundLength(newLength, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetRoundLength(newLength, true);
             }
         }
 
         private void OnChangeTargetPointValue(int? newTarget)
         {
-            int? oldTarget = ScrimMatchEngine.ConfigTargetPointValue;
+            int? oldTarget = ScrimMatchEngine.Config.TargetPointValue;
 
             if (newTarget != oldTarget)
             {
-                if (ScrimMatchEngine.TrySetConfigTargetPointValue(newTarget, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetTargetPointValue(newTarget, true);
             }
         }
 
         private void OnChangePeriodicControlPoints(int? newPoints)
         {
-            int? oldPoints = ScrimMatchEngine.ConfigPeriodicFacilityControlPoints;
+            int? oldPoints = ScrimMatchEngine.Config.PeriodicFacilityControlPoints;
 
             if (newPoints != oldPoints)
             {
-                if (ScrimMatchEngine.TrySetConfigPeriodicFacilityControlPoints(newPoints, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetPeriodicFacilityControlPoints(newPoints, true);
             }
         }
 
         private void OnChangePeriodicControlPointsInterval(int? newInterval)
         {
-            int? oldInterval = ScrimMatchEngine.ConfigPeriodicFacilityControlInterval;
+            int? oldInterval = ScrimMatchEngine.Config.PeriodicFacilityControlInterval;
 
             if (newInterval != oldInterval)
             {
-                if (ScrimMatchEngine.TrySetConfigPeriodicFacilityControlInterval(newInterval, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetPeriodicFacilityControlInterval(newInterval, true);
             }
         }
 
         private void OnChangeWorldId(int newWorldId)
         {
-            int oldWorldId = ScrimMatchEngine.ConfigWorldId;
+            int oldWorldId = ScrimMatchEngine.Config.WorldId;
 
             if (newWorldId != oldWorldId)
             {
-                if (ScrimMatchEngine.TrySetConfigWorldId(newWorldId, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetWorldId(newWorldId, true);
             }
         }
 
         private void OnChangeFacilityId(int newFacilityId)
         {
-            int oldFacilityId = ScrimMatchEngine.ConfigFacilityId;
+            int oldFacilityId = ScrimMatchEngine.Config.FacilityId;
 
             if (newFacilityId != oldFacilityId)
             {
-                ScrimMatchEngine.TrySetConfigFacilityId(newFacilityId.ToString());
+                ScrimMatchEngine.Config.TrySetFacilityId(newFacilityId.ToString());
             }
         }
 
         private void OnChangeEndRoundOnFacilityCapture(bool newSetting)
         {
-            bool oldSetting = ScrimMatchEngine.ConfigEndRoundOnFacilityCapture;
+            bool oldSetting = ScrimMatchEngine.Config.EndRoundOnFacilityCapture;
 
             if (newSetting != oldSetting)
             {
-                if (ScrimMatchEngine.TrySetConfigEndRoundOnFacilityCapture(newSetting, true))
-                {
-                    InvokeAsyncStateHasChanged();
-                }
+                ScrimMatchEngine.Config.TrySetEndRoundOnFacilityCapture(newSetting, true);
             }
         }
         #endregion Form Handling
@@ -406,7 +385,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 bool newSetting = message.Ruleset.DefaultEndRoundOnFacilityCapture;
 
-                if (ScrimMatchEngine.TrySetConfigEndRoundOnFacilityCapture(newSetting, false))
+                if (ScrimMatchEngine.Config.TrySetEndRoundOnFacilityCapture(newSetting, false))
                 {
                     InvokeAsyncStateHasChanged();
                 }
@@ -422,8 +401,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             if (signal == nameof(MatchControlHub.Rematch) || signal == nameof(MatchControlHub.ClearMatch))
             {                
-                ScrimMatchEngine.TrySetConfigRoundLength(_ruleset.DefaultRoundLength, false);
-                ScrimMatchEngine.TrySetConfigTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
+                ScrimMatchEngine.Config.TrySetRoundLength(_ruleset.DefaultRoundLength, false);
+                ScrimMatchEngine.Config.TrySetTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
                 InvokeAsyncStateHasChanged();
             }
         }
@@ -453,7 +432,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             _ruleset = newActiveRuleset;
 
-            //LoadActiveRuleset is called by the event raised by ActivateRulesetAsync
+            // LoadActiveRuleset is called by the event raised by ActivateRulesetAsync
 
             _isChangingRuleset = false;
             InvokeAsyncStateHasChanged();
