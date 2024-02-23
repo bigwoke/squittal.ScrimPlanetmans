@@ -18,10 +18,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
         #region Ruleset Select List Variables
         private IEnumerable<Ruleset> _rulesets;
-        private string _inputSelectRulesetStringId;
-
-        private Ruleset _activeRuleset;
-        private Ruleset _selectedRuleset;
+        private Ruleset _ruleset;
         #endregion
 
         #region Facility & World Select List Variables
@@ -54,11 +51,13 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
             MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
+            MessageService.RaiseActiveRulesetChangeEvent -= ReceiveActiveRulesetChangeEvent;
             MessageService.RaiseRulesetSettingChangeEvent -= ReceiveRulesetSettingChangeEvent;
             MessageService.RaiseMatchControlSignalReceiptMessage -= ReceiveMatchControlSignalReceiptMessage;
 
             MessageService.RaiseMatchStateUpdateEvent += ReceiveMatchStateUpdateMessageEvent;
             MessageService.RaiseMatchConfigurationUpdateEvent += ReceiveMatchConfigurationUpdateMessageEvent;
+            MessageService.RaiseActiveRulesetChangeEvent += ReceiveActiveRulesetChangeEvent;
             MessageService.RaiseRulesetSettingChangeEvent += ReceiveRulesetSettingChangeEvent;
             MessageService.RaiseMatchControlSignalReceiptMessage += ReceiveMatchControlSignalReceiptMessage;
 
@@ -70,7 +69,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             {
                 GetCensusStreamStatusAsync(),
                 LoadRulesetsAsync(),
-                SetUpActiveRulesetConfigAsync()
+                LoadActiveRulesetAsync()
             };
             await Task.WhenAll(taskList);
 
@@ -84,6 +83,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
         {
             MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateMessageEvent;
             MessageService.RaiseMatchConfigurationUpdateEvent -= ReceiveMatchConfigurationUpdateMessageEvent;
+            MessageService.RaiseActiveRulesetChangeEvent -= ReceiveActiveRulesetChangeEvent;
             MessageService.RaiseRulesetSettingChangeEvent -= ReceiveRulesetSettingChangeEvent;
             MessageService.RaiseMatchControlSignalReceiptMessage -= ReceiveMatchControlSignalReceiptMessage;
         }
@@ -96,17 +96,17 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             InvokeAsyncStateHasChanged();
         }
 
-        private async Task SetUpActiveRulesetConfigAsync()
+        private async Task LoadActiveRulesetAsync()
         {
-            _activeRuleset = await RulesetManager.GetActiveRulesetAsync();
+            _isLoadingActiveRulesetConfig = true;
+            InvokeAsyncStateHasChanged();
 
-            if (_activeRuleset != null) // afaik this should never be null
+            _ruleset = await RulesetManager.GetActiveRulesetAsync();
+
+            if (_ruleset != null) // afaik this should never be null
             {
-                _selectedRuleset = _activeRuleset;
-                _inputSelectRulesetStringId = _activeRuleset.Id.ToString();
-
                 // TODO: probably move this to SME
-                MatchConfiguration newMatchConfiguration = new(_activeRuleset);
+                MatchConfiguration newMatchConfiguration = new(_ruleset);
 
                 if (ScrimMatchEngine.ConfigIsManualTitle)
                 {
@@ -153,15 +153,15 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 // TODO: carry over old settings depending on what the Round Win Condition is
 
                 ScrimMatchEngine.ConfigureMatch(newMatchConfiguration);
+            }
 
-                if (_activeRuleset.RulesetFacilityRules.Any())
-                {
-                    _mapRegions = _activeRuleset.RulesetFacilityRules.Select(r => r.MapRegion).OrderBy(r => r.FacilityName);
-                }
-                else
-                {
-                    _mapRegions = (await FacilityService.GetScrimmableMapRegionsAsync()).OrderBy(r => r.FacilityName);
-                }
+            if (_ruleset.RulesetFacilityRules.Any())
+            {
+                _mapRegions = _ruleset.RulesetFacilityRules.Select(r => r.MapRegion).OrderBy(r => r.FacilityName);
+            }
+            else
+            {
+                _mapRegions = (await FacilityService.GetScrimmableMapRegionsAsync()).OrderBy(r => r.FacilityName);
             }
 
             _isLoadingActiveRulesetConfig = false;
@@ -248,8 +248,8 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
                 await Task.Run(() => ScrimMatchEngine.ClearMatch(isRematch));
 
-                ScrimMatchEngine.TrySetConfigRoundLength(_activeRuleset.DefaultRoundLength, false);
-                ScrimMatchEngine.TrySetConfigTitle(_activeRuleset.DefaultMatchTitle ?? string.Empty, false);
+                ScrimMatchEngine.TrySetConfigRoundLength(_ruleset.DefaultRoundLength, false);
+                ScrimMatchEngine.TrySetConfigTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
             }
 
             _isClearingMatch = false;
@@ -393,6 +393,11 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
             InvokeAsyncStateHasChanged();
         }
 
+        private async void ReceiveActiveRulesetChangeEvent(object sender, ScrimMessageEventArgs<ActiveRulesetChangeMessage> e)
+        {
+            await LoadActiveRulesetAsync();
+        }
+
         private void ReceiveRulesetSettingChangeEvent(object sender, ScrimMessageEventArgs<RulesetSettingChangeMessage> e)
         {
             RulesetSettingChangeMessage message = e.Message;
@@ -417,27 +422,20 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             if (signal == nameof(MatchControlHub.Rematch) || signal == nameof(MatchControlHub.ClearMatch))
             {                
-                ScrimMatchEngine.TrySetConfigRoundLength(_activeRuleset.DefaultRoundLength, false);
-                ScrimMatchEngine.TrySetConfigTitle(_activeRuleset.DefaultMatchTitle ?? string.Empty, false);
+                ScrimMatchEngine.TrySetConfigRoundLength(_ruleset.DefaultRoundLength, false);
+                ScrimMatchEngine.TrySetConfigTitle(_ruleset.DefaultMatchTitle ?? string.Empty, false);
                 InvokeAsyncStateHasChanged();
             }
         }
         #endregion Event Handling
 
         #region Ruleset Form Controls
-        private async void OnChangeRulesetSelection(string rulesetStringId)
+        private async Task OnChangeRulesetSelection(int rulesetId)
         {
             _isChangingRuleset = true;
             InvokeAsyncStateHasChanged();
 
-            if (!int.TryParse(rulesetStringId, out int rulesetId))
-            {
-                _isChangingRuleset = false;
-                InvokeAsyncStateHasChanged();
-                return;
-            }
-
-            if (rulesetId == _selectedRuleset.Id || rulesetId == _activeRuleset.Id)
+            if (rulesetId == _ruleset.Id)
             {
                 _isChangingRuleset = false;
                 InvokeAsyncStateHasChanged();
@@ -446,18 +444,16 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             Ruleset newActiveRuleset = await RulesetManager.ActivateRulesetAsync(rulesetId);
 
-            if (newActiveRuleset == null || newActiveRuleset.Id == _activeRuleset.Id)
+            if (newActiveRuleset == null)
             {
                 _isChangingRuleset = false;
                 InvokeAsyncStateHasChanged();
                 return;
             }
 
-            _activeRuleset = newActiveRuleset;
-            _selectedRuleset = newActiveRuleset;
-            _inputSelectRulesetStringId = newActiveRuleset.Id.ToString();
+            _ruleset = newActiveRuleset;
 
-            await SetUpActiveRulesetConfigAsync();
+            //LoadActiveRuleset is called by the event raised by ActivateRulesetAsync
 
             _isChangingRuleset = false;
             InvokeAsyncStateHasChanged();
