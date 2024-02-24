@@ -37,16 +37,16 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
         private bool _endRoundOnFacilityCapture = Ruleset.DefaultEndRoundOnFacilityCaptureValue;
         private bool _isManualEndRoundOnFacilityCapture = false;
 
-        private int? _targetPointValue;
+        private int? _targetPointValue = Ruleset.DefaultTargetPointValue;
         private bool _isManualTargetPointValue = false;
 
-        private int? _initialPoints;
+        private int? _initialPoints = Ruleset.DefaultInitialPoints;
         private bool _isManualInitialPoints = false;
 
-        private int? _periodicFacilityControlPoints;
+        private int? _periodicFacilityControlPoints = Ruleset.DefaultPeriodicFacilityControlPoints;
         private bool _isManualPeriodicFacilityControlPoints = false;
 
-        private int? _periodicFacilityControlInterval;
+        private int? _periodicFacilityControlInterval = Ruleset.DefaultPeriodicFacilityControlInterval;
         private bool _isManualPeriodicFacilityControlInterval = false;
 
         private bool _enableRoundTimeLimit = Ruleset.DefaultEnableRoundTimeLimit;
@@ -55,7 +55,7 @@ namespace squittal.ScrimPlanetmans.Models.ScrimEngine
         private MatchWinCondition _matchWinCondition = Ruleset.DefaultMatchWinCondition;
         private RoundWinCondition _roundWinCondition = Ruleset.DefaultRoundWinCondition;
         private bool _enablePeriodicFacilityControlRewards = Ruleset.DefaultEnablePeriodicFacilityControlRewards;
-        private PointAttributionType? _periodFacilityControlPointAttributionType;
+        private PointAttributionType? _periodFacilityControlPointAttributionType = Ruleset.DefaultPeriodicFacilityControlPointAttributionType;
 
         public MatchConfiguration()
         {

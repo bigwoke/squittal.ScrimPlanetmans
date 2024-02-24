@@ -38,7 +38,7 @@ namespace squittal.ScrimPlanetmans.Models.Forms
 
         public bool EndRoundOnPointValueReached { get; set; } = false;
         public int TargetPointValue { get; set; }
-        public int InitialPoints { get; set; } = 0;
+        public int InitialPoints { get; set; } = Ruleset.DefaultInitialPoints;
 
         public MatchWinCondition MatchWinCondition { get; set; } = MatchWinCondition.MostPoints;
         public RoundWinCondition RoundWinCondition { get; set; } = RoundWinCondition.NotApplicable;
@@ -79,16 +79,16 @@ namespace squittal.ScrimPlanetmans.Models.Forms
             DefaultEndRoundOnFacilityCapture = ruleset.DefaultEndRoundOnFacilityCapture;
 
             EndRoundOnPointValueReached = ruleset.EndRoundOnPointValueReached;
-            TargetPointValue = ruleset.TargetPointValue ?? 100;
+            TargetPointValue = ruleset.TargetPointValue ?? Ruleset.DefaultTargetPointValue;
             InitialPoints = 0; // ruleset.InitialPoints ?? 0;
 
             MatchWinCondition = ruleset.MatchWinCondition;
             RoundWinCondition = ruleset.RoundWinCondition;
 
             EnablePeriodicFacilityControlRewards = ruleset.EnablePeriodicFacilityControlRewards;
-            PeriodicFacilityControlPoints = ruleset.PeriodicFacilityControlPoints ?? 1;
-            PeriodicFacilityControlInterval = ruleset.PeriodicFacilityControlInterval ?? 10;
-            PeriodFacilityControlPointAttributionType = ruleset.PeriodFacilityControlPointAttributionType ?? PointAttributionType.Standard;
+            PeriodicFacilityControlPoints = ruleset.PeriodicFacilityControlPoints ?? Ruleset.DefaultPeriodicFacilityControlPoints;
+            PeriodicFacilityControlInterval = ruleset.PeriodicFacilityControlInterval ?? Ruleset.DefaultPeriodicFacilityControlInterval;
+            PeriodFacilityControlPointAttributionType = ruleset.PeriodFacilityControlPointAttributionType ?? Ruleset.DefaultPeriodicFacilityControlPointAttributionType;
 
             if (ruleset.RulesetOverlayConfiguration != null)
             {
@@ -121,16 +121,16 @@ namespace squittal.ScrimPlanetmans.Models.Forms
             DefaultEndRoundOnFacilityCapture = ruleset.DefaultEndRoundOnFacilityCapture;
             
             EndRoundOnPointValueReached = ruleset.EndRoundOnPointValueReached;
-            TargetPointValue = ruleset.TargetPointValue ?? 100;
+            TargetPointValue = ruleset.TargetPointValue ?? Ruleset.DefaultTargetPointValue;
             InitialPoints = 0; // ruleset.InitialPoints ?? 0;
 
             MatchWinCondition = ruleset.MatchWinCondition;
             RoundWinCondition = ruleset.RoundWinCondition;
             
             EnablePeriodicFacilityControlRewards = ruleset.EnablePeriodicFacilityControlRewards;
-            PeriodicFacilityControlPoints = ruleset.PeriodicFacilityControlPoints ?? 1;
-            PeriodicFacilityControlInterval = ruleset.PeriodicFacilityControlInterval ?? 10;
-            PeriodFacilityControlPointAttributionType = ruleset.PeriodFacilityControlPointAttributionType ?? PointAttributionType.Standard;
+            PeriodicFacilityControlPoints = ruleset.PeriodicFacilityControlPoints ?? Ruleset.DefaultPeriodicFacilityControlPoints;
+            PeriodicFacilityControlInterval = ruleset.PeriodicFacilityControlInterval ?? Ruleset.DefaultPeriodicFacilityControlPoints;
+            PeriodFacilityControlPointAttributionType = ruleset.PeriodFacilityControlPointAttributionType ?? Ruleset.DefaultPeriodicFacilityControlPointAttributionType;
 
             if (ruleset.RulesetOverlayConfiguration != null)
             {

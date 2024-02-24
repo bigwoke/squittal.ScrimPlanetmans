@@ -13,7 +13,12 @@ namespace squittal.ScrimPlanetmans.ScrimMatch.Models
         public const TimerDirection DefaultRoundTimerDirection = TimerDirection.Down;
         public const bool DefaultEndRoundOnFacilityCaptureValue = false;
         public const bool DefaultEndRoundOnPointValueReached = false;
+        public const int DefaultTargetPointValue = 100;
+        public const int DefaultInitialPoints = 0;
         public const bool DefaultEnablePeriodicFacilityControlRewards = false;
+        public const int DefaultPeriodicFacilityControlPoints = 1;
+        public const int DefaultPeriodicFacilityControlInterval = 10;
+        public const PointAttributionType DefaultPeriodicFacilityControlPointAttributionType = PointAttributionType.Standard;
         public const MatchWinCondition DefaultMatchWinCondition = MatchWinCondition.MostPoints;
         public const RoundWinCondition DefaultRoundWinCondition = RoundWinCondition.MostPoints;
 
@@ -40,16 +45,16 @@ namespace squittal.ScrimPlanetmans.ScrimMatch.Models
         public bool DefaultEndRoundOnFacilityCapture { get; set; } = DefaultEndRoundOnFacilityCaptureValue;
         public bool EndRoundOnPointValueReached { get; set; } = DefaultEndRoundOnPointValueReached;
 
-        public int? TargetPointValue { get; set; } 
-        public int? InitialPoints { get; set; }
+        public int? TargetPointValue { get; set; } = DefaultTargetPointValue;
+        public int? InitialPoints { get; set; } = DefaultInitialPoints;
 
         public MatchWinCondition MatchWinCondition { get; set; } = DefaultMatchWinCondition;
         public RoundWinCondition RoundWinCondition { get; set; } = DefaultRoundWinCondition;
 
         public bool EnablePeriodicFacilityControlRewards { get; set; } = DefaultEnablePeriodicFacilityControlRewards;
-        public int? PeriodicFacilityControlPoints { get; set; }
-        public int? PeriodicFacilityControlInterval { get; set; }
-        public PointAttributionType? PeriodFacilityControlPointAttributionType { get; set; } //= PointAttributionType.Standard;
+        public int? PeriodicFacilityControlPoints { get; set; } = DefaultPeriodicFacilityControlPoints;
+        public int? PeriodicFacilityControlInterval { get; set; } = DefaultPeriodicFacilityControlInterval;
+        public PointAttributionType? PeriodFacilityControlPointAttributionType { get; set; } = DefaultPeriodicFacilityControlPointAttributionType;
 
 
         public ICollection<RulesetActionRule> RulesetActionRules { get; set; }
