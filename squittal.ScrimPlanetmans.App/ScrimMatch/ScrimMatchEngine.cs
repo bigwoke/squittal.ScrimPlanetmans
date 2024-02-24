@@ -217,7 +217,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             _wsMonitor.DisableScoring();
 
             // Stop the timer if forcing the round to end (as opposed to timer reaching 0)
-            if (GetLatestTimerTickMessage().State != TimerState.Stopped)
+            if (GetLatestTimerTickMessage()?.State != TimerState.Stopped)
             {
                 _logger.LogInformation($"Trying to Halt Match Timer");
                 _timer.Halt();
