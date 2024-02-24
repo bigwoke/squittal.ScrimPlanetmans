@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using squittal.ScrimPlanetmans.App.Hubs;
 using squittal.ScrimPlanetmans.Models;
 using squittal.ScrimPlanetmans.Models.Planetside;
+using squittal.ScrimPlanetmans.Models.ScrimEngine;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.ScrimMatch.Models;
 
@@ -366,7 +367,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
                 return;
             }
 
-            Ruleset newActiveRuleset = await RulesetManager.ActivateRulesetAsync(rulesetId);
+            Ruleset newActiveRuleset = await RulesetManager.ActivateRulesetAsync(rulesetId); // Event within calls LoadActiveRulesetAsync
 
             if (newActiveRuleset == null)
             {
@@ -377,9 +378,12 @@ namespace squittal.ScrimPlanetmans.App.Pages.Admin.MatchSetup
 
             _ruleset = newActiveRuleset;
 
-            // LoadActiveRulesetAsync is called by the event raised by ActivateRulesetAsync above
-
             ScrimMatchEngine.Config.ApplyRuleset(_ruleset);
+
+            if (!_mapRegions.Any(r => r.FacilityId == ScrimMatchEngine.Config.FacilityId))
+            {
+                ScrimMatchEngine.Config.FacilityId = MatchConfiguration.DefaultNoFacilityId;
+            }
 
             _isChangingRuleset = false;
             InvokeAsyncStateHasChanged();
