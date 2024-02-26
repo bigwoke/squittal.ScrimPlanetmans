@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using squittal.ScrimPlanetmans.App.Hubs;
+using squittal.ScrimPlanetmans.App.ScrimMatch;
 using squittal.ScrimPlanetmans.App.Services;
 using squittal.ScrimPlanetmans.App.SignalR.Hubs;
 using squittal.ScrimPlanetmans.CensusServices;

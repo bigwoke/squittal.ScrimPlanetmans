@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.Models;
+using squittal.ScrimPlanetmans.App.ScrimMatch;
 
 namespace squittal.ScrimPlanetmans.ScrimMatch
 {

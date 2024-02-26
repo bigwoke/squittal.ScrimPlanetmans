@@ -6,12 +6,13 @@ using Microsoft.Extensions.Logging;
 using squittal.ScrimPlanetmans.CensusStream;
 using squittal.ScrimPlanetmans.Data.Models;
 using squittal.ScrimPlanetmans.Models.ScrimEngine;
+using squittal.ScrimPlanetmans.ScrimMatch;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.ScrimMatch.Models;
 using squittal.ScrimPlanetmans.ScrimMatch.Timers;
 using squittal.ScrimPlanetmans.Services.ScrimMatch;
 
-namespace squittal.ScrimPlanetmans.ScrimMatch
+namespace squittal.ScrimPlanetmans.App.ScrimMatch
 {
     public class ScrimMatchEngine : IScrimMatchEngine
     {
@@ -45,7 +46,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
         private DateTime _matchStartTime;
 
-        private readonly AutoResetEvent _captureAutoEvent = new AutoResetEvent(true);
+        private readonly AutoResetEvent _captureAutoEvent = new(true);
 
         public ScrimMatchEngine(
             IScrimTeamsManager teamsManager,
@@ -105,7 +106,6 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             StartRound();
         }
 
-
         public async Task ClearMatch(bool isRematch)
         {
             if (_isRunning)
@@ -120,32 +120,32 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             }
             _messageService.DisableLogging();
 
-            var previousWorldId = _matchConfiguration.WorldId;
-            var previousIsManualWorldId = _matchConfiguration.IsManualWorldId;
+            int previousWorldId = _matchConfiguration.WorldId;
+            bool previousIsManualWorldId = _matchConfiguration.IsManualWorldId;
 
-            var previousEndRoundOnFacilityCapture = _matchConfiguration.EndRoundOnFacilityCapture;
-            var previousIsManualEndRoundOnFacilityCapture = _matchConfiguration.EndRoundOnFacilityCapture;
+            bool previousEndRoundOnFacilityCapture = _matchConfiguration.EndRoundOnFacilityCapture;
+            bool previousIsManualEndRoundOnFacilityCapture = _matchConfiguration.EndRoundOnFacilityCapture;
 
-            var previousTargetPointValue = _matchConfiguration.TargetPointValue;
-            var previousIsManualTargetPointValue = _matchConfiguration.IsManualTargetPointValue;
+            int? previousTargetPointValue = _matchConfiguration.TargetPointValue;
+            bool previousIsManualTargetPointValue = _matchConfiguration.IsManualTargetPointValue;
 
-            var previousInitialPoints = _matchConfiguration.InitialPoints;
-            var previousIsManualInitialPoints = _matchConfiguration.IsManualInitialPoints;
+            int? previousInitialPoints = _matchConfiguration.InitialPoints;
+            bool previousIsManualInitialPoints = _matchConfiguration.IsManualInitialPoints;
 
-            var previousPeriodicFacilityControlPoints = _matchConfiguration.PeriodicFacilityControlPoints;
-            var previousIsManualPeriodicFacilityControlPoints = _matchConfiguration.IsManualPeriodicFacilityControlPoints;
+            int? previousPeriodicFacilityControlPoints = _matchConfiguration.PeriodicFacilityControlPoints;
+            bool previousIsManualPeriodicFacilityControlPoints = _matchConfiguration.IsManualPeriodicFacilityControlPoints;
 
-            var previousPeriodicFacilityControlInterval = _matchConfiguration.PeriodicFacilityControlInterval;
-            var previousIsManualPeriodicFacilityControlInterval = _matchConfiguration.IsManualPeriodicFacilityControlInterval;
+            int? previousPeriodicFacilityControlInterval = _matchConfiguration.PeriodicFacilityControlInterval;
+            bool previousIsManualPeriodicFacilityControlInterval = _matchConfiguration.IsManualPeriodicFacilityControlInterval;
 
-            var activeRuleset = await _rulesetManager.GetActiveRulesetAsync();
+            Ruleset activeRuleset = await _rulesetManager.GetActiveRulesetAsync();
             _matchConfiguration = new MatchConfiguration(activeRuleset);
 
             if (isRematch)
             {
                 _matchConfiguration.TrySetWorldId(previousWorldId, previousIsManualWorldId);
                 _matchConfiguration.TrySetEndRoundOnFacilityCapture(previousEndRoundOnFacilityCapture, previousIsManualEndRoundOnFacilityCapture);
-                
+
                 _matchConfiguration.TrySetTargetPointValue(previousTargetPointValue, previousIsManualTargetPointValue);
                 _matchConfiguration.TrySetInitialPoints(previousInitialPoints, previousIsManualInitialPoints);
                 _matchConfiguration.TrySetPeriodicFacilityControlPoints(previousPeriodicFacilityControlPoints, previousIsManualPeriodicFacilityControlPoints);
@@ -238,12 +238,12 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             _logger.LogInformation($"Round {_currentRound} ended; scoring disabled");
 
-            #pragma warning disable CS4014
+#pragma warning disable CS4014
             Task.Run(() =>
             {
                 _messageService.BroadcastSimpleMessage($"Round {_currentRound} ended; scoring disabled");
             }).ConfigureAwait(false);
-            #pragma warning restore CS4014
+#pragma warning restore CS4014
 
             SendMatchStateUpdateMessage();
 
@@ -263,11 +263,11 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             if (_matchConfiguration.SaveLogFiles == true)
             {
-                var matchId = BuildMatchId();
+                string matchId = BuildMatchId();
 
                 _messageService.SetLogFileName($"{matchId}.txt");
 
-                var scrimMatch = new Data.Models.ScrimMatch
+                Data.Models.ScrimMatch scrimMatch = new()
                 {
                     Id = matchId,
                     StartTime = _matchStartTime,
@@ -281,11 +281,11 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
         private string BuildMatchId()
         {
-            var matchId = _matchStartTime.ToString("yyyyMMddTHHmmss");
+            string matchId = _matchStartTime.ToString("yyyyMMddTHHmmss");
 
-            for (var i = 1; i <= 3; i++)
+            for (int i = 1; i <= 3; i++)
             {
-                var alias = _teamsManager.GetTeamAliasDisplay(i);
+                string alias = _teamsManager.GetTeamAliasDisplay(i);
 
                 if (string.IsNullOrWhiteSpace(alias))
                 {
@@ -316,7 +316,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             {
                 _timer.Configure(null);
             }
-            
+
             if (_matchConfiguration.EnablePeriodicFacilityControlRewards && _matchConfiguration.PeriodicFacilityControlInterval.HasValue)
             {
                 _periodicTimer.Configure(TimeSpan.FromSeconds(_matchConfiguration.PeriodicFacilityControlInterval.Value));
@@ -377,13 +377,12 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             _roundEndChecker.Disable();
 
             _wsMonitor.DisableScoring();
-            
+
             _timer.Reset();
             if (_matchConfiguration.EnablePeriodicFacilityControlRewards)
             {
                 _periodicTimer.Reset();
             }
-
 
             await _teamsManager.RollBackAllTeamStats(_currentRound);
 
@@ -438,10 +437,9 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
         private void OnMatchTimerTick(object sender, ScrimMessageEventArgs<MatchTimerTickMessage> e)
         {
-            
             _latestTimerTickMessage = e.Message;
         }
-        
+
         public bool IsRunning()
         {
             return _isRunning;
@@ -484,9 +482,8 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
         private bool CanChangeRuleset()
         {
-            return (_currentRound == 0 && _matchState == MatchState.Uninitialized && !_isRunning);
+            return _currentRound == 0 && _matchState == MatchState.Uninitialized && !_isRunning;
         }
-
 
         private void OnTeamOutfitChangeEvent(object sender, ScrimMessageEventArgs<TeamOutfitChangeMessage> e)
         {
@@ -497,8 +494,8 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
             int? worldId;
 
-            var message = e.Message;
-            var changeType = message.ChangeType;
+            TeamOutfitChangeMessage message = e.Message;
+            TeamChangeType changeType = message.ChangeType;
             bool isRollBack = false;
 
             if (changeType == TeamChangeType.Add)
@@ -528,16 +525,15 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
         }
 
         private void OnTeamPlayerChangeEvent(object sender, ScrimMessageEventArgs<TeamPlayerChangeMessage> e)
-        {           
+        {
             if (_matchConfiguration.IsManualWorldId)
             {
                 return;
             }
 
-            var message = e.Message;
-            var changeType = message.ChangeType;
-            var player = message.Player;
-
+            TeamPlayerChangeMessage message = e.Message;
+            TeamPlayerChangeType changeType = message.ChangeType;
+            Player player = message.Player;
 
             // Handle outfit additions/removals via Team Outfit Change events
             if (!player.IsOutfitless)
@@ -576,16 +572,16 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             {
                 return;
             }
-            
+
             if (!_matchConfiguration.EnablePeriodicFacilityControlRewards)
             {
                 //_logger.LogInformation($"PeriodicFacilityControlRewards not enabled");
                 return;
             }
 
-            var controlEvent = e.Message.FacilityControl;
-            var eventFacilityId = controlEvent.FacilityId;
-            var eventWorldId = controlEvent.WorldId;
+            ScrimFacilityControlActionEvent controlEvent = e.Message.FacilityControl;
+            int eventFacilityId = controlEvent.FacilityId;
+            int eventWorldId = controlEvent.WorldId;
 
             if (eventFacilityId == _matchConfiguration.FacilityId && eventWorldId == _matchConfiguration.WorldId)
             {
@@ -611,27 +607,26 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             }
         }
 
-        #pragma warning disable CS1998
+#pragma warning disable CS1998
+
         private async Task OnPeriodiocPointsTimerTick(object sender, ScrimMessageEventArgs<PeriodicPointsTimerStateMessage> e)
         {
             _logger.LogInformation($"Received PeriodicPointsTimerStateMessage");
 
             _latestPeriodicPointsTimerTickMessage = e.Message;
 
-
             if (e.Message.PeriodElapsed && _matchConfiguration.EnablePeriodicFacilityControlRewards && FacilityControlTeamOrdinal.HasValue && _isRunning)
             {
-                #pragma warning disable CS4014
+#pragma warning disable CS4014
                 Task.Run(() =>
                 {
                     ProcessPeriodicPointsTick(e.Message);
-
                 }).ConfigureAwait(false);
-                #pragma warning restore CS4014
+#pragma warning restore CS4014
             }
-
         }
-        #pragma warning restore CS1998
+
+#pragma warning restore CS1998
 
         private async Task ProcessPeriodicPointsTick(PeriodicPointsTimerStateMessage payload)
         {
@@ -643,13 +638,13 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
                 return;
             }
 
-            var timestamp = DateTime.Now;
+            DateTime timestamp = DateTime.Now;
 
-            var controllingTeamOrdinal = FacilityControlTeamOrdinal.Value;
+            int controllingTeamOrdinal = FacilityControlTeamOrdinal.Value;
 
             try
             {
-                var points = _matchScorer.ScorePeriodicFacilityControlTick(controllingTeamOrdinal);
+                int? points = _matchScorer.ScorePeriodicFacilityControlTick(controllingTeamOrdinal);
 
                 if (!points.HasValue)
                 {
@@ -659,8 +654,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
 
                 _logger.LogInformation($"Scored PeriodicPointsTimer tick: {points.Value} points");
 
-
-                var periodicTickModel = new ScrimPeriodicControlTick()
+                ScrimPeriodicControlTick periodicTickModel = new()
                 {
                     ScrimMatchId = GetMatchId(),
                     Timestamp = timestamp,
@@ -696,7 +690,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
             {
                 _wsMonitor.SetWorldSubscription(Config.WorldId);
             }
-            
+
             if (e.PropertyName == nameof(Config.FacilityId))
             {
                 _wsMonitor.SetFacilitySubscription(Config.FacilityId);
@@ -708,6 +702,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
         }
 
         #region Outbound Messages
+
         private void SendMatchStateUpdateMessage()
         {
             _messageService.BroadcastMatchStateUpdateMessage(new MatchStateUpdateMessage(_matchState, _currentRound, DateTime.UtcNow, _matchConfiguration.Title, _matchDataService.CurrentMatchId));
@@ -717,6 +712,7 @@ namespace squittal.ScrimPlanetmans.ScrimMatch
         {
             _messageService.BroadcastMatchConfigurationUpdateMessage(new MatchConfigurationUpdateMessage(_matchConfiguration));
         }
+
         #endregion Outbound Messages
     }
 }
