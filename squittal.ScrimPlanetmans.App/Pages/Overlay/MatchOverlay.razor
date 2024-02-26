@@ -23,8 +23,8 @@
 
 @if (ShowPlayers && _activeStatsDisplayType != null)
 {
-    <TeamPlayerStatusesContainer i_TeamOrdinal=1 i_Compact=CompactView i_StatsType=(OverlayStatsDisplayType)_activeStatsDisplayType i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
-    <TeamPlayerStatusesContainer i_TeamOrdinal=2 i_Compact=CompactView i_StatsType=(OverlayStatsDisplayType)_activeStatsDisplayType i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
+    <TeamPlayerStatusesContainer i_TeamOrdinal=1 i_Compact=_useCompactLayout.Value i_StatsType=_activeStatsDisplayType.Value i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
+    <TeamPlayerStatusesContainer i_TeamOrdinal=2 i_Compact=_useCompactLayout.Value i_StatsType=_activeStatsDisplayType.Value i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
 }
 
 @if (ShowScoreboard)
@@ -34,11 +34,11 @@
 
 @if (ShowReport && _activeStatsDisplayType != null && !ShowAnalytics)
 {
-    <MatchReportContainer i_ShowHsr=ShowHsr i_StatsType=(OverlayStatsDisplayType)_activeStatsDisplayType i_Compact=CompactView i_ShowPlayerScoresSetting=_showStatusPanelScores />
+    <MatchReportContainer i_ShowHsr=ShowHsr i_StatsType=_activeStatsDisplayType.Value i_Compact=_useCompactLayout.Value i_ShowPlayerScoresSetting=_showStatusPanelScores />
 }
 else if (ShowReport && ShowAnalytics)
 {
-    <MatchAnalyticReportContainer i_CurrentRoundOnly=ShowCurrentRoundOnly i_ShowHsr=ShowHsr i_StatsType=(OverlayStatsDisplayType)_activeStatsDisplayType />
+    <MatchAnalyticReportContainer i_CurrentRoundOnly=ShowCurrentRoundOnly i_ShowHsr=ShowHsr i_StatsType=_activeStatsDisplayType.Value />
 }
 
 @if (ShowFeed)

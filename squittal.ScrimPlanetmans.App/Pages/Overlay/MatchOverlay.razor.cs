@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 using squittal.ScrimPlanetmans.ScrimMatch.Models;
 
@@ -9,392 +13,166 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
 {
     public partial class MatchOverlay
     {
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "report")]
-        public bool ShowReport { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "analytic")]
-        public bool ShowAnalytics { get; set; } = false;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "feed")]
-        public bool ShowFeed { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "players")]
-        public bool ShowPlayers { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "scoreboard")]
-        public bool ShowScoreboard { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "title")]
-        public bool ShowTitle { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "legacy")]
-        public bool LegacyUi { get; set; } = false;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "reportHsr")]
-        public bool ShowHsr { get; set; } = true;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "compact")]
-        public bool CompactView { get; set; } = false;
-        private bool IsManualCompactView { get; set; } = false;
-
-        [Parameter]
-        [SupplyParameterFromQuery(Name = "currentRound")]
-        public bool ShowCurrentRoundOnly { get; set; } = false;
-
-        private bool _objectiveStats = false;
-        private bool? _showStatusPanelScores = null;
+        public const bool DefaultShowReport = true;
+        public const bool DefaultShowAnalytics = false;
+        public const bool DefaultShowFeed = true;
+        public const bool DefaultShowPlayers = true;
+        public const bool DefaultShowScoreboard = true;
+        public const bool DefaultShowTitle = true;
+        public const bool DefaultLegacyUi = false;
+        public const bool DefaultShowHsr = true;
+        public const bool DefaultShowCurrentRoundOnly = false;
 
         private Ruleset _activeRuleset;
+        private bool? _useCompactLayout = null;
+        private bool? _showStatusPanelScores = null;
         private OverlayStatsDisplayType? _activeStatsDisplayType;
+
+        [Parameter]
+        [QueryBoolParameter("report", DefaultShowReport)]
+        public bool ShowReport { get; set; } = DefaultShowReport;
+
+        [Parameter]
+        [QueryBoolParameter("analytic", DefaultShowAnalytics)]
+        public bool ShowAnalytics { get; set; } = DefaultShowAnalytics;
+
+        [Parameter]
+        [QueryBoolParameter("feed", DefaultShowFeed)]
+        public bool ShowFeed { get; set; } = DefaultShowFeed;
+
+        [Parameter]
+        [QueryBoolParameter("players", DefaultShowPlayers)]
+        public bool ShowPlayers { get; set; } = DefaultShowPlayers;
+
+        [Parameter]
+        [QueryBoolParameter("scoreboard", DefaultShowScoreboard)]
+        public bool ShowScoreboard { get; set; } = DefaultShowScoreboard;
+
+        [Parameter]
+        [QueryBoolParameter("title", DefaultShowTitle)]
+        public bool ShowTitle { get; set; } = DefaultShowTitle;
+
+        [Parameter]
+        [QueryBoolParameter("legacy", DefaultLegacyUi)]
+        public bool LegacyUi { get; set; } = DefaultLegacyUi;
+
+        [Parameter]
+        [QueryBoolParameter("reportHsr", DefaultShowHsr)]
+        public bool ShowHsr { get; set; } = DefaultShowHsr;
+
+        [Parameter]
+        [QueryBoolParameter("currentRound", DefaultShowCurrentRoundOnly)]
+        public bool ShowCurrentRoundOnly { get; set; } = DefaultShowCurrentRoundOnly;
+
+        [Parameter]
+        [QueryBoolParameter("compact")]
+        public bool? CompactLayout { get; set; }
+        private bool IsManualCompactLayout => CompactLayout is not null;
 
 
         #region Initialization Methods
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            NavManager.LocationChanged += OnLocationChanged;
-
             MessageService.RaiseActiveRulesetChangeEvent += OnActiveRulesetChanged;
             MessageService.RaiseRulesetOverlayConfigurationChangeEvent += OnRulesetOverlayConfigurationChanged;
-        }
 
-        public void Dispose()
-        {
-            NavManager.LocationChanged -= OnLocationChanged;
+            _activeRuleset = await RulesetManager.GetActiveRulesetAsync(false);
 
-            MessageService.RaiseActiveRulesetChangeEvent -= OnActiveRulesetChanged;
-            MessageService.RaiseRulesetOverlayConfigurationChangeEvent -= OnRulesetOverlayConfigurationChanged;
+            _useCompactLayout = CompactLayout ?? _activeRuleset.RulesetOverlayConfiguration.UseCompactLayout;
+            _showStatusPanelScores = _activeRuleset.RulesetOverlayConfiguration.ShowStatusPanelScores;
+            _activeStatsDisplayType = _activeRuleset.RulesetOverlayConfiguration.StatsDisplayType;
         }
 
         protected override void OnParametersSet()
         {
-            UpdateUriParameters();
-        }
+            Uri uri = NavManager.ToAbsoluteUri(NavManager.Uri);
 
-        protected override async Task OnInitializedAsync()
-        {
-            try
+            // Get all properties marked with [QueryParameter]
+            IEnumerable<PropertyInfo> props = GetType().GetProperties()
+                .Where(prop => Attribute.IsDefined(prop, typeof(QueryBoolParameterAttribute)));
+
+            // Parse query parameter in attribute and set value to property
+            foreach (PropertyInfo prop in props)
             {
-                _activeRuleset = await RulesetManager.GetActiveRulesetAsync(false);
+                QueryBoolParameterAttribute attr = prop.GetCustomAttribute<QueryBoolParameterAttribute>();
 
-                if (!IsManualCompactView)
+                if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(attr.Parameter, out StringValues val))
                 {
-                    CompactView = _activeRuleset.RulesetOverlayConfiguration.UseCompactLayout;
+                    if (bool.TryParse(val, out bool parsed))
+                    {
+                        prop.SetValue(this, parsed);
+                    }
+                    else
+                    {
+                        // If property is nullable, do not assign default
+                        if (prop.PropertyType != typeof(Nullable))
+                        {
+                            prop.SetValue(this, attr.DefaultValue);
+                        }
+                    }
                 }
-
-                _activeStatsDisplayType = _activeRuleset.RulesetOverlayConfiguration.StatsDisplayType;
-
-                _objectiveStats = _activeStatsDisplayType == OverlayStatsDisplayType.InfantryObjective;
-
-                _showStatusPanelScores = _activeRuleset.RulesetOverlayConfiguration.ShowStatusPanelScores;
-            }
-            catch
-            {
-                // Ignore
             }
         }
 
+        public void Dispose()
+        {
+            MessageService.RaiseActiveRulesetChangeEvent -= OnActiveRulesetChanged;
+            MessageService.RaiseRulesetOverlayConfigurationChangeEvent -= OnRulesetOverlayConfigurationChanged;
+        }
         #endregion Initialization Methods
 
         #region Event Handling
-        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
-        {
-            if (UpdateUriParameters())
-            {
-                StateHasChanged();
-            }
-        }
-
         private void OnActiveRulesetChanged(object sender, ScrimMessageEventArgs<ActiveRulesetChangeMessage> args)
         {
-            var ruleset = args.Message.ActiveRuleset;
+            RulesetOverlayConfiguration configuration = args.Message.ActiveRuleset.RulesetOverlayConfiguration;
 
-            var newRulesetCompact = ruleset.RulesetOverlayConfiguration.UseCompactLayout;
-            var newRulesetOverlayStatsDisplayType = ruleset.RulesetOverlayConfiguration.StatsDisplayType;
-            var newRulesetShowStatusPanelScores = ruleset.RulesetOverlayConfiguration.ShowStatusPanelScores;
-
-            var stateChanged = false;
-
-            if (newRulesetCompact != CompactView && !IsManualCompactView)
+            if (TryUpdateFromRuleset(configuration))
             {
-                CompactView = newRulesetCompact;
-                stateChanged = true;
-            }
-
-            if (newRulesetOverlayStatsDisplayType != _activeStatsDisplayType)
-            {
-                _activeStatsDisplayType = newRulesetOverlayStatsDisplayType;
-
-                _objectiveStats = _activeStatsDisplayType == OverlayStatsDisplayType.InfantryObjective;
-
-                stateChanged = true;
-            }
-
-            if (newRulesetShowStatusPanelScores != _showStatusPanelScores)
-            {
-                _showStatusPanelScores = newRulesetShowStatusPanelScores;
-                stateChanged = true;
-            }
-
-            if (stateChanged)
-            {
-                InvokeAsyncStateHasChanged();
+                InvokeAsync(StateHasChanged);
             }
         }
 
         private void OnRulesetOverlayConfigurationChanged(object sender, ScrimMessageEventArgs<RulesetOverlayConfigurationChangeMessage> args)
         {
-            var changes = args.Message.ChangedSettings;
-            var ruleset = args.Message.Ruleset;
-            var configuration = args.Message.OverlayConfiguration;
-
-            if (ruleset.Id != _activeRuleset.Id)
+            if (args.Message.Ruleset.Id != _activeRuleset.Id)
             {
                 return;
             }
 
-            var stateChanged = false;
-
-            if (changes.Contains(RulesetOverlayConfigurationChange.UseCompactLayout))
+            // It doesn't really matter which were changed, if they are not in sync with this object they must change
+            if (args.Message.ChangedSettings.Count > 0)
             {
-                if (configuration.UseCompactLayout != CompactView && !IsManualCompactView)
+                if (TryUpdateFromRuleset(args.Message.OverlayConfiguration))
                 {
-                    CompactView = configuration.UseCompactLayout;
-                    stateChanged = true;
+                    InvokeAsync(StateHasChanged);
                 }
-            }
-
-            if (changes.Contains(RulesetOverlayConfigurationChange.StatsDisplayType))
-            {
-                if (configuration.StatsDisplayType != _activeStatsDisplayType)
-                {
-                    _activeStatsDisplayType = configuration.StatsDisplayType;
-
-                    _objectiveStats = _activeStatsDisplayType == OverlayStatsDisplayType.InfantryObjective;
-
-                    stateChanged = true;
-                }
-            }
-
-            if (changes.Contains(RulesetOverlayConfigurationChange.ShowStatusPanelScores))
-            {
-                if (configuration.ShowStatusPanelScores != _showStatusPanelScores)
-                {
-                    _showStatusPanelScores = configuration.ShowStatusPanelScores;
-
-                    stateChanged = true;
-                }
-            }
-
-            if (stateChanged)
-            {
-                InvokeAsyncStateHasChanged();
             }
         }
-
         #endregion Event Handling
 
-        private bool UpdateUriParameters()
+        private bool TryUpdateFromRuleset(RulesetOverlayConfiguration configuration)
         {
-            var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
-            var stateChanged = false;
+            bool stateChanged = false;
 
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("report", out var qReport))
+            if (configuration.UseCompactLayout != _useCompactLayout && !IsManualCompactLayout)
             {
-                if (bool.TryParse(qReport, out var report))
-                {
-                    if (report != ShowReport)
-                    {
-                        ShowReport = report;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowReport = true;
-                    stateChanged = true;
-                }
+                _useCompactLayout = configuration.UseCompactLayout;
+                stateChanged = true;
             }
 
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("analytic", out var qAnalytic))
+            if (configuration.StatsDisplayType != _activeStatsDisplayType)
             {
-                if (bool.TryParse(qAnalytic, out var analytic))
-                {
-                    if (analytic != ShowAnalytics)
-                    {
-                        ShowAnalytics = analytic;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowAnalytics = false;
-                    stateChanged = true;
-                }
+                _activeStatsDisplayType = configuration.StatsDisplayType;
+                stateChanged = true;
             }
 
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("feed", out var qFeed))
+            if (configuration.ShowStatusPanelScores != _showStatusPanelScores)
             {
-                if (bool.TryParse(qFeed, out var feed))
-                {
-                    if (feed != ShowFeed)
-                    {
-                        ShowFeed = feed;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowFeed = true;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("players", out var qPlayers))
-            {
-                if (bool.TryParse(qPlayers, out var players))
-                {
-                    if (players != ShowPlayers)
-                    {
-                        ShowPlayers = players;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowPlayers = true;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("scoreboard", out var qScoreboard))
-            {
-                if (bool.TryParse(qScoreboard, out var scoreboard))
-                {
-                    if (scoreboard != ShowScoreboard)
-                    {
-                        ShowScoreboard = scoreboard;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowScoreboard = true;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("title", out var qTitle))
-            {
-                if (bool.TryParse(qTitle, out var title))
-                {
-                    if (title != ShowTitle)
-                    {
-                        ShowTitle = title;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowTitle = true;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("legacy", out var qLegacy))
-            {
-                if (bool.TryParse(qLegacy, out var legacy))
-                {
-                    if (legacy != LegacyUi)
-                    {
-                        LegacyUi = legacy;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    LegacyUi = false;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("reportHsr", out var qShowHsr))
-            {
-                if (bool.TryParse(qShowHsr, out var showHsr))
-                {
-                    if (showHsr != ShowHsr)
-                    {
-                        ShowHsr = showHsr;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowHsr = true;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("compact", out var qCompact))
-            {
-                if (bool.TryParse(qCompact, out var compact))
-                {
-                    if (compact != CompactView)
-                    {
-                        CompactView = compact;
-                        stateChanged = true;
-                    }
-
-                    IsManualCompactView = true;
-                }
-                else if (_activeRuleset != null)
-                {
-                    CompactView = _activeRuleset.RulesetOverlayConfiguration.UseCompactLayout;
-                    IsManualCompactView = false;
-                    stateChanged = true;
-                }
-            }
-
-            if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("currentRound", out var qCurrentRoundOnly))
-            {
-                if (bool.TryParse(qCurrentRoundOnly, out var currentRoundOnly))
-                {
-                    if (currentRoundOnly != ShowCurrentRoundOnly)
-                    {
-                        ShowCurrentRoundOnly = currentRoundOnly;
-                        stateChanged = true;
-                    }
-                }
-                else
-                {
-                    ShowCurrentRoundOnly = false;
-                    stateChanged = true;
-                }
-            }
-
-            if (ShowAnalytics == true && ShowPlayers == true)
-            {
-                ShowPlayers = false;
+                _showStatusPanelScores = configuration.ShowStatusPanelScores;
                 stateChanged = true;
             }
 
             return stateChanged;
-        }
-
-        private void InvokeAsyncStateHasChanged()
-        {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
         }
     }
 }
