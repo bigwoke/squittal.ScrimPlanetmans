@@ -2,95 +2,93 @@
 @using squittal.ScrimPlanetmans.Models;
 @using System.Threading;
 
-@if (i_killfeedEvent != null)
+@if (KillfeedEvent != null)
 {
     <tr class="">
         <td class="killfeedRowContainer @_cssClass">
-            <div class="killfeedHeadshot killfeedCell @GetHeadshotClass(i_killfeedEvent.IsHeadshot) @SqCssHelper.GetFactionClassFromId(i_killfeedEvent.ActingPlayer?.FactionId)">@*@_debug*@</div>
-            <div class="killfeedWinner killfeedPlayer killfeedCell @SqCssHelper.GetFactionClassFromId(i_killfeedEvent.ActingPlayer?.FactionId)">@GetPlayerName(i_killfeedEvent.ActingPlayer)</div>
-            <div class="killfeedPoints killfeedCell ">@i_killfeedEvent.PointsDisplay</div>
-            <div class="killfeedWeapon killfeedCell">@i_killfeedEvent.WeaponName</div>
-            <div class="killfeedLoser killfeedPlayer killfeedCell @SqCssHelper.GetFactionClassFromId(i_killfeedEvent.RecipientPlayer?.FactionId)">@GetPlayerName(i_killfeedEvent.RecipientPlayer)</div>
+            <div class="killfeedHeadshot killfeedCell @GetHeadshotClass(KillfeedEvent.IsHeadshot) @SqCssHelper.GetFactionClassFromId(KillfeedEvent.ActingPlayer?.FactionId)">
+                @if (Debug)
+                {
+                    @_debug
+                }
+            </div>
+            <div class="killfeedWinner killfeedPlayer killfeedCell @SqCssHelper.GetFactionClassFromId(KillfeedEvent.ActingPlayer?.FactionId)">@GetPlayerName(KillfeedEvent.ActingPlayer)</div>
+            <div class="killfeedPoints killfeedCell ">@KillfeedEvent.PointsDisplay</div>
+            <div class="killfeedWeapon killfeedCell">@KillfeedEvent.WeaponName</div>
+            <div class="killfeedLoser killfeedPlayer killfeedCell @SqCssHelper.GetFactionClassFromId(KillfeedEvent.RecipientPlayer?.FactionId)">@GetPlayerName(KillfeedEvent.RecipientPlayer)</div>
         </td>
     </tr>
 }
 
 @code {
-    [Parameter]
-    public ScrimKillfeedEvent i_killfeedEvent { get; set; }
+    private const int MaxRowLifetimeMs = 8000;
+    private const string CssAnimateOutClass = "animateOut";
+    private const string CssAnimateInClass = "animateIn";
+    private const string CssResetClass = "";
 
-    [Parameter]
-    public int i_index { get; set; }
-
-    private DateTime _prevTimestamp { get; set; }
-
-    public int _prevIndex { get; set; }
-
-    private string _cssClass = string.Empty;
-    private string _cssResetClasss = string.Empty;
-    private string _cssAnimateOutClass = "animateOut";
-    private string _cssAnimateInClass = "animateIn";
+    private readonly AutoResetEvent _autoEvent = new AutoResetEvent(true);
 
     private string _debug = "$";
-
-
+    private string _cssClass = CssResetClass;
+    private DateTime _firstRenderTimestamp;
+    private DateTime _paramSetTimestamp;
+    private DateTime _prevTimestamp;
     private Timer _timer;
-    private readonly AutoResetEvent _autoEvent = new AutoResetEvent(true);
-    private DateTime _firstRenderTimestamp { get; set; }
-    private DateTime _paramSetTimestamp { get; set; }
+
+    [Parameter]
+    public ScrimKillfeedEvent KillfeedEvent { get; set; }
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public bool Debug { get; set; } = false;
 
     #region Initialization Methods
     protected override void OnInitialized()
     {
-        _cssClass = _cssResetClasss;
-        _debug = "$";
-
-        _prevIndex = i_index;
-
         InitializeTimer();
     }
 
     protected override void OnParametersSet()
     {
-        var timestamp = i_killfeedEvent.Timestamp;
+        DateTime timestamp = KillfeedEvent.Timestamp;
 
-        _firstRenderTimestamp = i_killfeedEvent.FirstRenderTime;
+        _firstRenderTimestamp = KillfeedEvent.FirstRenderTime;
         _paramSetTimestamp = DateTime.Now;
 
         if (timestamp != _prevTimestamp)
         {
             _prevTimestamp = timestamp;
-
             _paramSetTimestamp = DateTime.Now;
 
-            i_killfeedEvent.PreviousRenderTime = _paramSetTimestamp;
+            KillfeedEvent.PreviousRenderTime = _paramSetTimestamp;
 
             ReConfigureTimer();
 
-            if (i_killfeedEvent.IsExpired)
+            if (KillfeedEvent.IsExpired)
             {
-                _cssClass = _cssAnimateOutClass;
+                _cssClass = CssAnimateOutClass;
             }
             else
             {
-                _cssClass = i_index == 0 ? _cssAnimateInClass : _cssResetClasss;
+                _cssClass = Index == 0 ? CssAnimateInClass : CssResetClass;
             }
 
             _debug = (_debug == "&") ? "@" : "&";
-
             StateHasChanged();
         }
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (i_killfeedEvent.IsExpired)
+        if (KillfeedEvent.IsExpired)
         {
-            _cssClass = _cssAnimateOutClass;
+            _cssClass = CssAnimateOutClass;
         }
         else
         {
-            _cssClass = _cssResetClasss;
+            _cssClass = CssResetClass;
         }
     }
     #endregion Initialization Methods
@@ -100,7 +98,7 @@
     {
         _autoEvent.WaitOne();
 
-        _timer = new Timer(HandleTimerTick, _autoEvent, Timeout.Infinite, 8000);
+        _timer = new Timer(HandleTimerTick, _autoEvent, Timeout.Infinite, MaxRowLifetimeMs);
 
         _autoEvent.Set();
     }
@@ -109,9 +107,8 @@
     {
         _autoEvent.WaitOne();
 
-        var timeRendered = (int)(_paramSetTimestamp - _firstRenderTimestamp).TotalMilliseconds;
-
-        var timeRemaining = 8000 - timeRendered;
+        int timeRendered = (int)(_paramSetTimestamp - _firstRenderTimestamp).TotalMilliseconds;
+        int timeRemaining = MaxRowLifetimeMs - timeRendered;
 
         if (timeRemaining <= 0)
         {
@@ -119,9 +116,9 @@
 
             InvokeAsync(() =>
             {
-                i_killfeedEvent.IsExpired = true;
+                KillfeedEvent.IsExpired = true;
 
-                _cssClass = _cssAnimateOutClass;
+                _cssClass = CssAnimateOutClass;
 
                 StateHasChanged();
             });
@@ -140,9 +137,9 @@
 
         InvokeAsync(() =>
         {
-            i_killfeedEvent.IsExpired = true;
+            KillfeedEvent.IsExpired = true;
 
-            _cssClass = _cssAnimateOutClass;
+            _cssClass = CssAnimateOutClass;
 
             StateHasChanged();
         });
@@ -165,13 +162,13 @@
 
     private string GetHeadshotClass(bool? isHeadshot)
     {
-        if (isHeadshot == null)
+        if (isHeadshot.GetValueOrDefault())
         {
-            return string.Empty;
+            return "headshot";
         }
         else
         {
-            return (bool)isHeadshot ? "headshot" : string.Empty;
+            return string.Empty;
 
         }
     }
