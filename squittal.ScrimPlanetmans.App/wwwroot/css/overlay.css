@@ -1886,3 +1886,18 @@ body {
     border-bottom: 1px solid rgba(252, 246, 255, 0.7);
     /*margin-bottom: 2px;*/
 }
+
+.analytic-report-container {
+    margin-top: 24px
+}
+    .analytic-report-container .analytic-report-container-row {
+        margin-left: auto;
+        margin-right: auto;
+        min-width: 50%;
+        max-width: fit-content;
+    }
+        .analytic-report-container .analytic-report-container-row .analytic-report-container-col {
+            margin-left: auto;
+            margin-right: auto;
+            z-index: 1;
+        }
