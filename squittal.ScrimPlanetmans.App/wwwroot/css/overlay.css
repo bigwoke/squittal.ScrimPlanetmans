@@ -796,6 +796,25 @@ body {
     text-align: center;
 }
 
+    /* Nullify inline-block whitespace to allow for readable HTML without breaking layout
+        (more info: https://stackoverflow.com/q/16935922) */
+    .overlay .scoreboard .outfitScoresContainer {
+        font-size: 0;
+    }
+        .overlay .scoreboard .outfitScoresContainer .outfitScoresRow {
+            font-size: 0;
+        }
+            .overlay .scoreboard .outfitScoresContainer .outfitScoresRow .outfitAlias,
+            .overlay .scoreboard .outfitScoresContainer .outfitScoresRow .outfitScore,
+            .overlay .scoreboard .outfitScoresContainer .outfitScoresRow .wedge {
+                font-size: 24px;
+            }
+
+            .overlay .scoreboard .outfitScoresContainer .outfitScoresRow .factionLabel {
+                font-size: 12px;
+            }
+            
+
     .overlay .scoreboard .outfitScoresContainer {
         display: inline-block;
         box-sizing: inherit;
@@ -817,11 +836,10 @@ body {
             border-bottom: 1px solid rgb(26, 26, 26) !important;
             box-sizing: inherit;
             background-color: rgb(35, 35, 35);
-            font-size: 24px;
             line-height: 1.25;
             height: 32px;
         }
-
+            
             .overlay .scoreboard .outfitScoresContainer .outfitScoresRow.team1 {
                 box-shadow: -1px 1px 3px rgba(47, 47, 47, 0.75);
                 border-left: 1px solid rgb(26, 26, 26) !important;
@@ -929,7 +947,6 @@ body {
             }
 
             .overlay .scoreboard .outfitScoresContainer .outfitScoresRow .factionLabel {
-                font-size: 12px;
                 display: inline-block;
                 line-height: 1;
                 width: 0px;
