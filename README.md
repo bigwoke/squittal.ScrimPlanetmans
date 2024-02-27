@@ -169,11 +169,11 @@ The general formula for using the parameters is `.../overlay?param1=value1&param
 | players    | List of players on the left & right side of the page |
 | report     | The match stats report in the center of the page     |
 | teams      | Teams and their score components on either side of the match timer |
-| scoreboard | The scoreboard at the top center of the page. Disabling the scoreboard also hides the killfeed. |
-| feed       | The killfeed in the center, below the scoreboard. The killfeed is always hidden if the scoreboard is hidden. |
+| scoreboard | The scoreboard at the top center of the page.        |
+| feed       | The killfeed in the center, below the scoreboard.    |
 | title      | The match title at the top center of the page        |
 | reportHsr  | The HSR column in the match report                   |
-| analytic    | Set to true to switch the match stats report to a more detailed version, similar to the Analytic Match Reports (see below)|). Note that the _players_ status components are automatically hidden when this setting is enabled. The data in the report is refreshed on page load and then every 5 seconds. |
+| analytic    | Set to true to switch the match stats report to a more detailed version, similar to the Analytic Match Reports (see below)|). The data in the report is refreshed on page load and then every 5 seconds. |
 | currentRound | Enable to show stats for the current round instead of the match totals. Currently supported by the scoreboard, player status boxes, and analytic report. The real-time report doesn't support this parameter. Omit or set this parameter to false to show match totals (the original/default behavior). |
 
 #### Examples
