@@ -20,40 +20,39 @@
 @if (!string.IsNullOrWhiteSpace(_scrimMatchId) && _currentRound > 0)
 {
     <div class="container-fluid" style="margin-top: 16px;">
-
         <div class="row" style="min-width: 50%; width: fit-content; margin-left: auto; margin-right: auto;">
-
             <div class="col-lg-12" style="margin-left: auto; margin-right: auto;">
-
                 <div class="header-card-container default" style="color: rgb(245, 245, 255); background-color: var(--sq-ov-bg-dark-gray-alpha-90); box-shadow: 0px 2px 5px 0px var(--sq-ov-bg-dark-gray-alpha-90); overflow-x: auto; border: 2px solid var(--sq-ov-bg-dark-gray); border-radius: 0;">
-
-                    @*<p style="margin: 0;">_scrimMatchId: @_scrimMatchId</p>
-                    <p style="margin: 0;">_renderedScrimMatchId: @_renderedScrimMatchId</p>
-                    <p style="margin: 0;">_isLoadingScrimPlayers: @_isLoadingScrimPlayers</p>
-                    <p style="margin: 0;">_isChangingScrimMatch: @_isChangingScrimMatch</p>
-                    <p style="margin: 0;">_refreshTimerCount: @_refreshTimerCount</p>
-                    <p style="margin: 0;">_matchStateUpdateCount: @_matchStateUpdateCount</p>
-                    <p style="margin: 0;">_currentRound: @_currentRound</p>
-                    <p style="margin: 0;">_renderedCurrentRoundOnly: @_renderedCurrentRoundOnly</p>
-
-                    <p style="margin: 0; margin-top: 8px;">_playerStats is null?: @(_playerStats == null)</p>
-                    <p style="margin: 0;">_teamStats is null?: @(_teamStats == null)</p>
-                    <p style="margin: 0;">_teamRoundStats is null?: @(_teamRoundStats == null)</p>
-                    @if (_teamRoundStats != null)
+                    @if (Debug)
                     {
+                        <p style="margin: 0;">_scrimMatchId: @_scrimMatchId</p>
+                        <p style="margin: 0;">_renderedScrimMatchId: @_renderedScrimMatchId</p>
+                        <p style="margin: 0;">_isLoadingScrimPlayers: @_isLoadingScrimPlayers</p>
+                        <p style="margin: 0;">_isChangingScrimMatch: @_isChangingScrimMatch</p>
+                        <p style="margin: 0;">_refreshTimerCount: @_refreshTimerCount</p>
+                        <p style="margin: 0;">_matchStateUpdateCount: @_matchStateUpdateCount</p>
+                        <p style="margin: 0;">_currentRound: @_currentRound</p>
+                        <p style="margin: 0;">_renderedCurrentRoundOnly: @_renderedCurrentRoundOnly</p>
+
+                        <p style="margin: 0; margin-top: 8px;">_playerStats is null?: @(_playerStats == null)</p>
+                        <p style="margin: 0;">_teamStats is null?: @(_teamStats == null)</p>
+                        <p style="margin: 0;">_teamRoundStats is null?: @(_teamRoundStats == null)</p>
+                        @if (_teamRoundStats != null)
+                        {
                         <p style="margin: 0;">_teamRoundStats count: @(_teamRoundStats.Count())</p>
-                    }
-                    <p style="margin: 0;">_playerRoundStats is null?: @(_playerRoundStats == null)</p>
-                    @if (_playerRoundStats != null)
-                    {
+                        }
+                        <p style="margin: 0;">_playerRoundStats is null?: @(_playerRoundStats == null)</p>
+                        @if (_playerRoundStats != null)
+                        {
                         <p style="margin: 0;">_playerRoundStats count: @(_playerRoundStats.Count())</p>
-                    }
-                    <p style="margin: 0;">_playerRoundStats is null?: @(_playerRoundStats == null)</p>
-                    @if (_playerRoundStats != null)
-                    {
+                        }
+                        <p style="margin: 0;">_playerRoundStats is null?: @(_playerRoundStats == null)</p>
+                        @if (_playerRoundStats != null)
+                        {
                         <p style="margin: 0;">_playerRoundStats count: @(_playerRoundStats.Count())</p>
+                        }
+                        <p style="margin: 0;">_matchInfo is null?: @(_matchInfo == null)</p>
                     }
-                    <p style="margin: 0;">_matchInfo is null?: @(_matchInfo == null)</p>*@
 
                     @if (_matchInfo == null  && _isChangingScrimMatch)
                     {
@@ -204,7 +203,7 @@
                                                     <th style="font-weight: 300; width: 60px;" title="Deaths">Deaths</th>
                                                 }
 
-                                                @if (_renderedShowHsr)
+                                                @if (ShowHsr)
                                                 {
                                                     <th style="font-weight: 300; width: 55px;" title="Head Shot Percent">
                                                         <div class="ps2-icon headshot tr" style="filter: brightness(100) saturate(100%); display: inline-block; margin-top: 0px;"></div>%
@@ -255,7 +254,7 @@
                                                 }
 
 
-                                                @if (_renderedShowHsr)
+                                                @if (ShowHsr)
                                                 {
                                                     <td style="padding-top: 0px;" title="@team.HeadshotKills / @team.Kills">@team.HeadshotPercent<span style="font-size: smaller;">%</span></td>
                                                 }
@@ -336,7 +335,7 @@
                                                         <td style="padding-top: 0px; opacity: @(GetStatOpacity(player.Deaths));">@player.Deaths</td>
                                                     }
 
-                                                    @if (_renderedShowHsr)
+                                                    @if (ShowHsr)
                                                     {
                                                         <td style="opacity: @(GetStatOpacity(player.Kills));" title="@player.HeadshotKills / @player.Kills">@player.HeadshotPercent<span style="font-size: smaller; padding-left: 1px;">%</span></td>
                                                     }
@@ -450,7 +449,7 @@
                                                     <th style="font-weight: 300; width: 60px;" title="Deaths">Deaths</th>
                                                 }
 
-                                                @if (_renderedShowHsr)
+                                                @if (ShowHsr)
                                                 {
                                                     <th style="font-weight: 300; width: 55px;" title="Head Shot Percent">
                                                         <div class="ps2-icon headshot tr" style="filter: brightness(100) saturate(100%); display: inline-block; margin-top: 0px;"></div>%
@@ -505,7 +504,7 @@
                                                     <td style="padding-top: 0px;">@team.Deaths</td>
                                                 }
 
-                                                @if (_renderedShowHsr)
+                                                @if (ShowHsr)
                                                 {
                                                     <td style="padding-top: 0px;" title="@team.HeadshotKills / @team.Kills">@team.HeadshotPercent<span style="font-size: smaller;">%</span></td>
                                                 }
@@ -584,7 +583,7 @@
                                                         <td style="padding-top: 0px; opacity: @(GetStatOpacity(player.Deaths));">@player.Deaths</td>
                                                     }
 
-                                                    @if (_renderedShowHsr)
+                                                    @if (ShowHsr)
                                                     {
                                                         <td style="opacity: @(GetStatOpacity(player.Kills));" title="@player.HeadshotKills / @player.Kills">@player.HeadshotPercent<span style="font-size: smaller; padding-left: 1px;">%</span></td>
                                                     }
@@ -630,567 +629,18 @@
                             </table>
                         }
                     }
-
                 </div>
-
             </div>
-
         </div>
     </div>
 }
 else
 {
-    @*<div>Match ID Is Null</div>*@
-}
-
-
-@code {
-    [Parameter]
-    public bool i_CurrentRoundOnly { get; set; }
-    private bool _renderedCurrentRoundOnly { get; set; } = false;
-
-    [Parameter]
-    public bool i_ShowHsr { get; set; } = true;
-    private bool _renderedShowHsr { get; set; } = true;
-
-    [Parameter]
-    public OverlayStatsDisplayType i_StatsType { get; set; }
-    private OverlayStatsDisplayType? _renderedStatsType { get; set; }
-
-    private OverlayStatsDisplayType _defaultStatsType = OverlayStatsDisplayType.InfantryScores;
-    private bool _useObjectiveStats { get; set; } = false;
-
-    private string _scrimMatchId { get; set; }
-    private string _renderedScrimMatchId { get; set; }
-
-    private string _matchID { get; set; }
-    private MatchState _matchState { get; set; }
-    private int _currentRound { get; set; }
-
-    private int _refreshTimerCount { get; set; } = 0;
-    private int _matchStateUpdateCount { get; set; } = 0;
-
-    private Timer _refreshTimer { get; set; }
-
-    private bool _anyRevives { get; set; } = false;
-
-    private IEnumerable<ScrimMatchReportInfantryPlayerStats> _playerStats { get; set; }
-    private IEnumerable<ScrimMatchReportInfantryTeamStats> _teamStats { get; set; }
-
-
-    private IEnumerable<ScrimMatchReportInfantryPlayerRoundStats> _playerRoundStats { get; set; }
-    private IEnumerable<ScrimMatchReportInfantryTeamRoundStats> _teamRoundStats { get; set; }
-
-    private Dictionary<int, int> _maxPlayerRoundPoints { get; set; }
-
-    private ScrimMatchInfo _matchInfo { get; set; }
-
-    private int _maxPlayerPoints { get; set; } = 1;
-
-    private bool _isLoadingScrimPlayers { get; set; } = false;
-    private bool _isChangingScrimMatch { get; set; } = true;
-    private bool _isChangingMatchRound { get; set; } = false;
-
-    //private bool _isChangingSelectedPlayer { get; set; } = false;
-
-    private Regex _idRegex = new Regex("[0-9]{19}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private Regex _nameRegex = new Regex("[A-Za-z0-9]{1,32}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-    private CancellationTokenSource cts;
-
-
-    #region Initialization Methods
-    //protected override void OnInitialized()
-    //{
-    //    MessageService.RaiseMatchStateUpdateEvent += ReceiveMatchStateUpdateEvent;
-
-    //    _matchID = ScrimMatchEngine.GetMatchId();
-    //    _matchState = ScrimMatchEngine.GetMatchState();
-    //    _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-    //    _refreshTimer = new Timer(HandleTimerTick, null, 0, 5000);
-    //}
-    protected override async Task OnInitializedAsync()
+    @if (Debug)
     {
-        MessageService.RaiseMatchStateUpdateEvent += ReceiveMatchStateUpdateEvent;
-
-        _scrimMatchId = ScrimMatchEngine.GetMatchId();
-        _matchState = ScrimMatchEngine.GetMatchState();
-        _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-        _refreshTimer = new Timer(HandleTimerTick, null, 0, 5000);
-
-        await RefreshAllStats();
-    }
-
-    protected override void OnParametersSet()
-    {
-        var stateHasChanged = false;
-
-        if (_renderedShowHsr != i_ShowHsr)
-        {
-            _renderedShowHsr = i_ShowHsr;
-
-            stateHasChanged = true;
-        }
-
-        if (_renderedStatsType != i_StatsType)
-        {
-            _renderedStatsType = (i_StatsType == OverlayStatsDisplayType.InfantryObjective) ? i_StatsType : _defaultStatsType;
-
-            _useObjectiveStats = (_renderedStatsType == OverlayStatsDisplayType.InfantryObjective);
-
-            stateHasChanged = true;
-        }
-
-
-        if (stateHasChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        //Console.WriteLine($"OnParametersSetAsync Start: {_renderedCurrentRoundOnly}, {_currentRound}");
-
-        if (_renderedCurrentRoundOnly != i_CurrentRoundOnly)
-        {
-            _renderedCurrentRoundOnly = i_CurrentRoundOnly;
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-            _isChangingMatchRound = true;
-            InvokeAsyncStateHasChanged();
-
-            await RefreshAllStats();
-
-            _isChangingMatchRound = false;
-            InvokeAsyncStateHasChanged();
-        }
-
-        //Console.WriteLine($"OnParametersSetAsync End: {_renderedCurrentRoundOnly}, {_currentRound}");
-    }
-
-    public void Dispose()
-    {
-        MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateEvent;
-
-        _refreshTimer.Dispose();
-
-        if (cts != null)
-        {
-            cts.Cancel();
-            cts.Dispose();
-        }
-    }
-
-    private async Task RefreshAllStats()
-    {
-        _isLoadingScrimPlayers = true;
-
-        if (!string.IsNullOrWhiteSpace(_scrimMatchId))
-        {
-            //Console.WriteLine($"Refreshing stats for match {_scrimMatchId}");
-
-            // If a process is already underway, cancel it
-            if (cts != null)
-            {
-                cts.Cancel();
-            }
-
-            // Set cts to cancel the current process if another table refresh is requested
-            CancellationTokenSource newCTS = new CancellationTokenSource();
-            cts = newCTS;
-
-            try
-            {
-                //_isChangingScrimMatch = true;
-                //InvokeAsyncStateHasChanged();
-
-                _renderedScrimMatchId = _scrimMatchId;
-
-                var TaskList = new List<Task>();
-
-                var matchInfoTask = LoadMatchInfo(cts.Token);
-                TaskList.Add(matchInfoTask);
-
-                if (!_renderedCurrentRoundOnly)
-                {
-                    var playerStatsTask = LoadInfantryPlayerStats(cts.Token);
-                    TaskList.Add(playerStatsTask);
-
-                    var teamStatsTask = LoadInfantryTeamStats(cts.Token);
-                    TaskList.Add(teamStatsTask);
-                }
-                else
-                {
-                    var playerRoundStatsTask = LoadInfantryPlayerRoundStats(cts.Token);
-                    TaskList.Add(playerRoundStatsTask);
-
-                    var teamRoundStatsTask = LoadInfantryTeamRoundStats(cts.Token);
-                    TaskList.Add(teamRoundStatsTask);
-                }
-
-                await Task.WhenAll(TaskList);
-
-                cts.Token.ThrowIfCancellationRequested();
-            }
-            catch (Exception ex)
-            {
-                // Ignore
-                Console.WriteLine($"Failed to refresh match stats with error: {ex.Message}");
-            }
-
-            // When the process is complete, signal that another process can proceed
-            if (cts == newCTS)
-            {
-                cts = null;
-            }
-        }
-
-        if (_renderedCurrentRoundOnly && _teamRoundStats != null && _teamRoundStats.Any())
-        {
-            _anyRevives = _teamRoundStats.Where(r => r.ScrimMatchRound == _currentRound).Max(r => r.Revives) > 0;
-        }
-        else if (!_renderedCurrentRoundOnly && _teamStats != null && _teamStats.Any())
-        {
-            _anyRevives = _teamStats.Max(r => r.Revives) > 0;
-        }
-
-        _isLoadingScrimPlayers = false;
-        _isChangingScrimMatch = false;
-        InvokeAsyncStateHasChanged();
-    }
-
-    #region Individual Data Fetchers
-    private async Task LoadInfantryPlayerStats(CancellationToken cancellationToken)
-    {
-        _playerStats = await ReportDataService.GetHistoricalScrimMatchInfantryPlayerStatsAsync(_scrimMatchId, cancellationToken);
-
-        if (_playerStats != null && _playerStats.Any())
-        {
-            _maxPlayerPoints = _playerStats.Max(p => p.Points);
-        }
-    }
-
-    private async Task LoadInfantryPlayerRoundStats(CancellationToken cancellationToken)
-    {
-        _playerRoundStats = await ReportDataService.GetHistoricalScrimMatchInfantryPlayerRoundStatsAsync(_scrimMatchId, _currentRound, cancellationToken);
-
-        if (_playerRoundStats != null && _playerRoundStats.Any())
-        {
-            _maxPlayerPoints = _playerRoundStats.Max(p => p.Points);
-
-            //var rounds = _playerRoundStats.Select(e => e.ScrimMatchRound).Distinct().ToList();
-
-            //_maxPlayerRoundPoints = new Dictionary<int, int>();
-
-            //foreach (var round in rounds)
-            //{
-            //    var maxRoundPoints = _playerRoundStats.Where(e => e.ScrimMatchRound == round).Max(e => e.Points);
-
-            //    _maxPlayerRoundPoints.TryAdd(round, maxRoundPoints);
-            //}
-        }
-    }
-
-    private async Task LoadInfantryTeamStats(CancellationToken cancellationToken)
-    {
-        _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-        _teamStats = await ReportDataService.GetHistoricalScrimMatchInfantryTeamStatsAsync(_scrimMatchId, cancellationToken);
-    }
-
-    private async Task LoadInfantryTeamRoundStats(CancellationToken cancellationToken)
-    {
-        //Console.WriteLine("Entered LoadInfantryTeamRoundStats");
-        //Console.WriteLine($"   _currentRound: {_currentRound}");
-
-        _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-        _teamRoundStats = await ReportDataService.GetHistoricalScrimMatchInfantryTeamRoundStatsAsync(_scrimMatchId, _currentRound, cancellationToken);
-
-        //var foundStats = (_teamRoundStats != null && _teamRoundStats.Any());
-
-        //Console.WriteLine($"_teamRoundStats populated? {foundStats}");
-    }
-
-    private async Task LoadMatchInfo(CancellationToken cancellationToken)
-    {
-        _matchInfo = await ReportDataService.GetHistoricalScrimMatchInfoAsync(_scrimMatchId, cancellationToken);
-    }
-    #endregion Individual Data Fetchers
-
-    #endregion Initialization Methods
-
-    #region Event Handling
-    private async void HandleTimerTick(object stateInfo)
-    {
-        if (_isChangingScrimMatch || _isLoadingScrimPlayers || _isChangingMatchRound)
-        {
-            return;
-        }
-
-        _refreshTimerCount += 1;
-
-        await RefreshAllStats();
-    }
-
-    private async void ReceiveMatchStateUpdateEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
-    {
-        if (_isChangingScrimMatch || _isLoadingScrimPlayers)
-        {
-            return;
-        }
-
-        var updateMatchId = e.Message.MatchId;
-        var matchState = e.Message.MatchState;
-        var currentRound = e.Message.CurrentRound;
-
-        if (matchState == MatchState.Running && _matchState != MatchState.Running)
-        {
-            _refreshTimer.Change(5000, 5000);
-        }
-        else if (matchState != MatchState.Running)
-        {
-            _refreshTimer.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-
-        _matchState = matchState;
-
-        if (string.IsNullOrWhiteSpace(_scrimMatchId) || (!string.IsNullOrWhiteSpace(updateMatchId) && (_scrimMatchId != updateMatchId)))
-        {
-            _scrimMatchId = updateMatchId;
-            _isChangingScrimMatch = true;
-
-            InvokeAsyncStateHasChanged();
-
-            //await RefreshAllStats();
-        }
-        else if (_currentRound != currentRound)
-        {
-            _currentRound = currentRound;
-            _isChangingMatchRound = true;
-            InvokeAsyncStateHasChanged();
-        }
-
-        _matchStateUpdateCount += 1;
-
-        await RefreshAllStats();
-
-        _isChangingScrimMatch = false;
-        _isChangingMatchRound = false;
-    }
-    #endregion Event Handling
-
-    #region Utilities
-    private string GetCharacterNameFullFromParameter(string inputString)
-    {
-        if (string.IsNullOrWhiteSpace(inputString) || _playerStats == null || !_playerStats.Any())
-        {
-            return string.Empty;
-        }
-
-        bool isId = _idRegex.Match(inputString).Success;
-
-        if (isId)
-        {
-            return _playerStats.Where(p => p.CharacterId == inputString).Select(p => p.NameFull).FirstOrDefault();
-        }
-
-        bool isName = _nameRegex.Match(inputString).Success;
-
-        if (isName)
-        {
-            var nameFullMatch = _playerStats.Where(p => p.NameFull == inputString).Select(p => p.NameFull).FirstOrDefault();
-
-            if (!string.IsNullOrWhiteSpace(nameFullMatch))
-            {
-                return nameFullMatch;
-            }
-
-            var nameDisplayMatch = _playerStats.Where(p => p.NameDisplay == inputString).Select(p => p.NameFull).FirstOrDefault();
-
-            return nameDisplayMatch;
-        }
-
-        return string.Empty;
-    }
-
-    private string GetCharacterIdFromParameter(string inputString)
-    {
-        if (string.IsNullOrWhiteSpace(inputString) || _playerStats == null || !_playerStats.Any())
-        {
-            return string.Empty;
-        }
-
-        bool isId = _idRegex.Match(inputString).Success;
-
-        if (isId)
-        {
-            return _playerStats.Where(p => p.CharacterId == inputString).Select(p => p.CharacterId).FirstOrDefault();
-        }
-
-        bool isName = _nameRegex.Match(inputString).Success;
-
-        if (isName)
-        {
-            var nameFullMatch = _playerStats.Where(p => p.NameFull == inputString).Select(p => p.CharacterId).FirstOrDefault();
-
-            if (!string.IsNullOrWhiteSpace(nameFullMatch))
-            {
-                return nameFullMatch;
-            }
-
-            var nameDisplayMatch = _playerStats.Where(p => p.NameDisplay == inputString).Select(p => p.CharacterId).FirstOrDefault();
-
-            return nameDisplayMatch;
-        }
-
-        return string.Empty;
-    }
-
-    private decimal GetPointGraphWidth(int points)
-    {
-        var maxPoints = _maxPlayerPoints;
-
-        var playerPoints = points;
-
-        return (playerPoints >= 1 && maxPoints > 0) ? Math.Ceiling(100 * ((decimal)playerPoints / (decimal)maxPoints)) : 4;
-    }
-
-    //private decimal GetPointGraphWidth(int points, int round)
-    //{
-    //    int maxPoints = 0;
-    //    var playerPoints = points;
-
-    //    if (!_maxPlayerRoundPoints.TryGetValue(round, out maxPoints))
-    //    {
-    //        maxPoints = 0;
-    //    }
-
-    //    return (playerPoints >= 1 && maxPoints > 0) ? Math.Ceiling(100 * ((decimal)playerPoints / (decimal)maxPoints)) : 4;
-    //}
-
-    private double GetStatOpacity(int value)
-    {
-        return (value != 0)
-            ? 1.0
-            : 0.25;
-    }
-
-    private string GetNetScoreLabelCssClass(int netScore)
-    {
-        if (netScore == 0)
-        {
-            return "neutral";
-        }
-        else if (netScore < 0)
-        {
-            return "negative";
-        }
-        else
-        {
-            return string.Empty;
-        }
-    }
-
-    private string GetNetScoreLabelText(int netScore)
-    {
-        if (netScore == 0)
-        {
-            return "•";
-        }
-        else
-        {
-            return "Δ";
-        }
-    }
-
-    private string GetLoadoutIconFromLoadoutId(PlanetsideClass planetsideClass)
-    {
-        if (planetsideClass == PlanetsideClass.Infiltrator)
-        {
-            return "infil";
-        }
-        else if (planetsideClass == PlanetsideClass.LightAssault)
-        {
-            return "la";
-        }
-        else if (planetsideClass == PlanetsideClass.Medic)
-        {
-            return "medic";
-        }
-        else if (planetsideClass == PlanetsideClass.Engineer)
-        {
-            return "engy";
-        }
-        else if (planetsideClass == PlanetsideClass.HeavyAssault)
-        {
-            return "heavy";
-        }
-        else if (planetsideClass == PlanetsideClass.MAX)
-        {
-            return "max";
-        }
-        else
-        {
-            return "unknown";
-        }
-    }
-
-    private string GetLoadoutIconFilterStyle(int factionId)
-    {
-        if (factionId == 1) // VS
-        {
-            //return "brightness(0) saturate(100%) invert(39%) sepia(41%) saturate(1794%) hue-rotate(224deg) brightness(98%) contrast(91%);";
-            return "brightness(0) saturate(100%) invert(78%) sepia(7%) saturate(3557%) hue-rotate(203deg) brightness(101%) contrast(104%)";
-        }
-        if (factionId == 2) // NC
-        {
-            //return "brightness(0) saturate(100%) invert(49%) sepia(57%) saturate(1428%) hue-rotate(184deg) brightness(101%) contrast(98%);";
-            return "brightness(0) saturate(100%) invert(79%) sepia(13%) saturate(853%) hue-rotate(177deg) brightness(105%) contrast(98%);";
-        }
-        if (factionId == 3) // TR
-        {
-            //return "brightness(0) saturate(100%) invert(50%) sepia(34%) saturate(1466%) hue-rotate(307deg) brightness(98%) contrast(88%);";
-            return "brightness(0) saturate(100%) invert(84%) sepia(7%) saturate(946%) hue-rotate(309deg) brightness(101%) contrast(101%);";
-        }
-
-        return string.Empty;
-    }
-
-    private string GetRoundRowBorderClass(int round, int maxRounds)
-    {
-        return round == maxRounds ? "last-of-group" : string.Empty;
-    }
-
-    private MarkupString GetAbbreviatedDamageDealt(int damageDealt, bool isTeamValue)
-    {
-        //if (damageDealt < 10000)
-        var color = isTeamValue ? "var(sq-ov-ps2-primary)" : "var(--sq-ov-ps2-primary-dark-alpha-70)";
-
-        if (damageDealt < 1000)
-        {
-            return (MarkupString)damageDealt.ToString("N0");
-        }
-        else if (damageDealt < 100000)
-        {
-            return (MarkupString)$"{Math.Round(damageDealt / 1000.0, 1)}<span style=\"color: {color};\">k</span>";
-        }
-        else
-        {
-            return (MarkupString)$"{Math.Round(damageDealt / 1000.0, 0)}<span style=\"color: {color};\">k</span>"; ;
-        }
-    }
-    #endregion Utilities
-
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        <div>Match ID Is Null</div>
     }
 }
+
+
+

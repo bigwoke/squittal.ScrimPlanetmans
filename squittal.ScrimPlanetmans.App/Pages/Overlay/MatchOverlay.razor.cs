@@ -22,6 +22,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         public const bool DefaultLegacyUi = false;
         public const bool DefaultShowHsr = true;
         public const bool DefaultShowCurrentRoundOnly = false;
+        public const OverlayStatsDisplayType DefaultStatsType = OverlayStatsDisplayType.InfantryScores;
 
         private Ruleset _activeRuleset;
         private bool? _useCompactLayout = null;
