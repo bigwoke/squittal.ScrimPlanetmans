@@ -22,6 +22,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         public const bool DefaultLegacyUi = false;
         public const bool DefaultShowHsr = true;
         public const bool DefaultShowCurrentRoundOnly = false;
+        public const bool DefaultShowTeams = true;
         public const OverlayStatsDisplayType DefaultStatsType = OverlayStatsDisplayType.InfantryScores;
 
         private Ruleset _activeRuleset;
@@ -64,6 +65,10 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         [Parameter]
         [QueryBoolParameter("currentRound", DefaultShowCurrentRoundOnly)]
         public bool ShowCurrentRoundOnly { get; set; } = DefaultShowCurrentRoundOnly;
+
+        [Parameter]
+        [QueryBoolParameter("teams", DefaultShowTeams)]
+        public bool ShowTeams { get; set; } = DefaultShowTeams;
 
         [Parameter]
         [QueryBoolParameter("compact")]

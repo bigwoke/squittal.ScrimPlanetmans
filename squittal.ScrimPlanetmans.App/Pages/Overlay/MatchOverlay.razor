@@ -11,7 +11,6 @@
 @using squittal.ScrimPlanetmans.Services.ScrimMatch;
 @using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 
-@inject ILogger<MatchOverlay> Logger
 @inject IScrimRulesetManager RulesetManager 
 @inject IScrimMessageBroadcastService MessageService
 @inject NavigationManager NavManager
@@ -29,7 +28,7 @@
 
 @if (ShowScoreboard)
 {
-    <ScoreboardContainer CurrentRoundOnly=ShowCurrentRoundOnly />
+    <ScoreboardContainer CurrentRoundOnly=ShowCurrentRoundOnly ShowTeams="ShowTeams" />
 }
 
 @if (ShowReport && _activeStatsDisplayType != null && !ShowAnalytics)

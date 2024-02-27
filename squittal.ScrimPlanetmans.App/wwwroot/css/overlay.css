@@ -816,7 +816,7 @@ body {
             
 
     .overlay .scoreboard .outfitScoresContainer {
-        display: inline-block;
+        display: block;
         box-sizing: inherit;
         border-radius: 1px;
         -moz-transition: height 0.5s cubic-bezier(.86,0,.07,1);

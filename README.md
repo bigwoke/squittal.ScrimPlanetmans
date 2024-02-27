@@ -168,6 +168,7 @@ The general formula for using the parameters is `.../overlay?param1=value1&param
 |-|-|
 | players    | List of players on the left & right side of the page |
 | report     | The match stats report in the center of the page     |
+| teams      | Teams and their score components on either side of the match timer |
 | scoreboard | The scoreboard at the top center of the page. Disabling the scoreboard also hides the killfeed. |
 | feed       | The killfeed in the center, below the scoreboard. The killfeed is always hidden if the scoreboard is hidden. |
 | title      | The match title at the top center of the page        |

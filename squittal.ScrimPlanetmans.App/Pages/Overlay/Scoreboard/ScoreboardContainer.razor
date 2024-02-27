@@ -15,17 +15,20 @@
 
 <div class="scoreboard">
     <div class="outfitScoresContainer">
-        <ScoreboardBaseCaptures CaptureCount=_teamControls1 FactionId=_teamFactionId1 TeamOrdinal=1 />
+        @if (ShowTeams)
+        {
+            <ScoreboardBaseCaptures CaptureCount=_teamControls1 FactionId=_teamFactionId1 TeamOrdinal=1 />
 
-        <div class="outfitScoresRow team1 @SqCssHelper.GetFactionClassFromId(_teamFactionId1)">
-            <div class="outfitAlias">@_teamAlias1</div>
-            <div class="outfitScore @_pointsDisplayClass">@_teamPointsDisplay1</div>
-            <div class="wedge"></div>
-            <div class="factionLabel">@_teamFactionDisplay1[0]<br />@_teamFactionDisplay1[1]</div>
-            <div class="pointProgressContainer @(GetShowPointTargetCssClass(_shouldShowPointTarget))">
-                <div class="pointProgressBar" style="transform: @(_teamPointBarTransform1);"></div>
-            </div> 
-        </div>
+            <div class="outfitScoresRow team1 @SqCssHelper.GetFactionClassFromId(_teamFactionId1)">
+                <div class="outfitAlias">@_teamAlias1</div>
+                <div class="outfitScore @_pointsDisplayClass">@_teamPointsDisplay1</div>
+                <div class="wedge"></div>
+                <div class="factionLabel">@_teamFactionDisplay1[0]<br />@_teamFactionDisplay1[1]</div>
+                <div class="pointProgressContainer @(GetShowPointTargetCssClass(_shouldShowPointTarget))">
+                    <div class="pointProgressBar" style="transform: @(_teamPointBarTransform1);"></div>
+                </div>
+            </div>            
+        }
 
         <div class="timerContainer">
             @if (_shouldShowPointTarget)
@@ -39,47 +42,53 @@
             }
         </div>
 
-        <div class="outfitScoresRow team2 @SqCssHelper.GetFactionClassFromId(_teamFactionId2)">
-            <div class="factionLabel">@_teamFactionDisplay2[0]<br />@_teamFactionDisplay2[1]</div>
-            <div class="wedge"></div>
-            <div class="outfitScore @_pointsDisplayClass">@_teamPointsDisplay2</div>
-            <div class="outfitAlias">@_teamAlias2</div>
-            <div class="pointProgressContainer @(GetShowPointTargetCssClass(_shouldShowPointTarget))">
-                <div class="pointProgressBar" style="transform: @(_teamPointBarTransform2);"></div>
-            </div> 
-        </div>
+        @if (ShowTeams)
+        {
+            <div class="outfitScoresRow team2 @SqCssHelper.GetFactionClassFromId(_teamFactionId2)">
+                <div class="factionLabel">@_teamFactionDisplay2[0]<br />@_teamFactionDisplay2[1]</div>
+                <div class="wedge"></div>
+                <div class="outfitScore @_pointsDisplayClass">@_teamPointsDisplay2</div>
+                <div class="outfitAlias">@_teamAlias2</div>
+                <div class="pointProgressContainer @(GetShowPointTargetCssClass(_shouldShowPointTarget))">
+                    <div class="pointProgressBar" style="transform: @(_teamPointBarTransform2);"></div>
+                </div>
+            </div>
 
-        <ScoreboardBaseCaptures CaptureCount=_teamControls2 FactionId=_teamFactionId2 TeamOrdinal=2 />
-    </div>
-
-    <div class="series-tally-container" style="@(GetSeriesTallyMarginString())">
-        <div class="team team1 @SqCssHelper.GetFactionClassFromId(_teamFactionId1)">
-            @foreach (ScrimSeriesMatchResult matchResult in _teamSeriesResults1)
-            {
-                <div class="tally @GetSeriesMatchTallyCssClass(matchResult.ResultType)"></div>
-            }
-            @if (ShouldShowActiveSeriesTally())
-            {
-                <div class="tally @GetSeriesMatchTallyCssClass(null)"></div>
-            }
-        </div>
-
-        <div class="team team2 @SqCssHelper.GetFactionClassFromId(_teamFactionId2)">
-            @foreach (ScrimSeriesMatchResult matchResult in _teamSeriesResults2)
-            {
-                <div class="tally @GetSeriesMatchTallyCssClass(matchResult.ResultType)"></div>
-            }
-            @if (ShouldShowActiveSeriesTally())
-            {
-                <div class="tally @GetSeriesMatchTallyCssClass(null)"></div>
-            }
-        </div>
-
-        @if(_isPeriodPointsEnabled)
-        { 
-            <PeriodicControlTickProgressBar />
+            <ScoreboardBaseCaptures CaptureCount=_teamControls2 FactionId=_teamFactionId2 TeamOrdinal=2 />
         }
     </div>
+
+    @if (ShowTeams)
+    {
+        <div class="series-tally-container" style="@(GetSeriesTallyMarginString())">
+            <div class="team team1 @SqCssHelper.GetFactionClassFromId(_teamFactionId1)">
+                @foreach (ScrimSeriesMatchResult matchResult in _teamSeriesResults1)
+                {
+                    <div class="tally @GetSeriesMatchTallyCssClass(matchResult.ResultType)"></div>
+                }
+                @if (ShouldShowActiveSeriesTally())
+                {
+                    <div class="tally @GetSeriesMatchTallyCssClass(null)"></div>
+                }
+            </div>
+
+            <div class="team team2 @SqCssHelper.GetFactionClassFromId(_teamFactionId2)">
+                @foreach (ScrimSeriesMatchResult matchResult in _teamSeriesResults2)
+                {
+                    <div class="tally @GetSeriesMatchTallyCssClass(matchResult.ResultType)"></div>
+                }
+                @if (ShouldShowActiveSeriesTally())
+                {
+                    <div class="tally @GetSeriesMatchTallyCssClass(null)"></div>
+                }
+            </div>
+
+            @if (_isPeriodPointsEnabled)
+            {
+                <PeriodicControlTickProgressBar />
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -112,6 +121,9 @@
 
     [Parameter]
     public bool CurrentRoundOnly { get; set; }
+
+    [Parameter]
+    public bool ShowTeams { get; set; }
 
     private bool _shouldShowPoints => (_matchState == MatchState.Uninitialized) ? false : true;
     private string _teamPointsDisplay1 => _shouldShowPoints ? _teamPoints1.ToString() : NoPointsString;
