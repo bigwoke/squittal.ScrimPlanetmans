@@ -19,19 +19,19 @@
 
 @if (_team != null)
 {
-    <div class="players @($"players{i_TeamOrdinal}") @_compactCssClass @_compactFiveColumnsCssClass @_noScoreCssClass @SqCssHelper.GetFactionClassFromId(_team.FactionId)">
+    <div class="players @($"players{TeamOrdinal}") @_compactCssClass @_compactFiveColumnsCssClass @_noScoreCssClass @SqCssHelper.GetFactionClassFromId(_team.FactionId)">
 
         @lock (_renderedPlayers)
         {
-            foreach (var player in _renderedPlayers)
+            foreach (Player player in _renderedPlayers)
             {
-                if (_renderedCompact)
+                if (CompactLayout)
                 {
-                    <TeamPlayerCompactStatusCell i_TeamOrdinal=i_TeamOrdinal i_player=player i_NoScore=!_resolvedShowScores i_CurrentRoundOnly=_renderedCurrentRoundOnly />
+                    <TeamPlayerCompactStatusCell Player=player NoScore=!_resolvedShowScores CurrentRoundOnly=CurrentRoundOnly />
                 }
                 else
                 {
-                    <TeamPlayerStatusRow i_TeamOrdinal=i_TeamOrdinal i_player=player i_NoScore=!_resolvedShowScores i_CurrentRoundOnly=_renderedCurrentRoundOnly />
+                    <TeamPlayerStatusRow TeamOrdinal=TeamOrdinal Player=player NoScore=!_resolvedShowScores CurrentRoundOnly=CurrentRoundOnly />
                 }
             }
         }
@@ -40,38 +40,37 @@
 }
 
 @code {
-    [Parameter]
-    public int i_TeamOrdinal { get; set; }
-    private int _renderedTeamOrdinal { get; set; }
+    private const string CssCompactFiveColumnsClass = "compact-5-columns";
+    private const string CssCompactLayoutClass = "compact";
+    private const string CssNoScoreClass = "noScore";
 
-    [Parameter]
-    public bool i_Compact { get; set; }
-    private bool _renderedCompact { get; set; } = false;
-
-    [Parameter]
-    public OverlayStatsDisplayType i_StatsType { get; set; }
-    private OverlayStatsDisplayType? _renderedStatsType { get; set; }
-
-    [Parameter]
-    public bool i_CurrentRoundOnly { get; set; }
-    private bool _renderedCurrentRoundOnly { get; set; } = false;
-
-    [Parameter]
-    public bool? i_ShowPlayerScoresSetting { get; set; }
-    private bool? _renderedShowPlayerScoresSetting { get; set; }
-
-    private bool _resolvedShowScores { get; set; } = true;
+    private bool? _renderedShowPlayerScores;
+    private bool _resolvedShowScores = true;
 
     private Team _team;
 
-    private List<Player> _renderedPlayers { get; set; } = new List<Player>();
-    private int _renderedPlayersCount { get; set; } = 0;
-    private ConcurrentQueue<TeamPlayerChangeMessage> _teamPlayersQueue { get; set; } = new ConcurrentQueue<TeamPlayerChangeMessage>();
+    private List<Player> _renderedPlayers = new List<Player>();
+    private int _renderedPlayersCount = 0;
+    private ConcurrentQueue<TeamPlayerChangeMessage> _teamPlayersQueue = new ConcurrentQueue<TeamPlayerChangeMessage>();
 
-    private string _compactCssClass { get; set; } = string.Empty;
-    private string _noScoreCssClass { get; set; } = string.Empty;
+    private string _compactCssClass = string.Empty;
+    private string _noScoreCssClass = string.Empty;
+    private string _compactFiveColumnsCssClass = string.Empty;
 
-    private string _compactFiveColumnsCssClass { get; set; } = string.Empty;
+    [Parameter]
+    public int TeamOrdinal { get; set; }
+
+    [Parameter]
+    public bool CompactLayout { get; set; }
+
+    [Parameter]
+    public OverlayStatsDisplayType StatsType { get; set; }
+
+    [Parameter]
+    public bool CurrentRoundOnly { get; set; }
+
+    [Parameter]
+    public bool? ShowPlayerScores { get; set; }
 
     #region Initialization Methods
     protected override void OnInitialized()
@@ -90,81 +89,29 @@
 
     protected override void OnParametersSet()
     {
-        if (i_TeamOrdinal != _renderedTeamOrdinal && i_TeamOrdinal >= 0)
+        InitializeTeamData();
+        SetCompactModeCssClass();
+
+        if (ResolveShowPlayerScores())
         {
-            _renderedTeamOrdinal = i_TeamOrdinal;
-            InitializeTeamData();
-        }
-
-        var stateChanged = false;
-
-        if (i_Compact != _renderedCompact)
-        {
-            _renderedCompact = i_Compact;
-            SetCompactModeCssClass();
-
-            stateChanged = true;
-        }
-
-        var showScoreSettingsChanged = false;
-
-        if (i_StatsType != _renderedStatsType)
-        {
-            _renderedStatsType = i_StatsType;
-
-            showScoreSettingsChanged = true;
-        }
-
-        if (i_ShowPlayerScoresSetting != _renderedShowPlayerScoresSetting)
-        {
-            _renderedShowPlayerScoresSetting = i_ShowPlayerScoresSetting;
-
-            showScoreSettingsChanged = true;
-        }
-
-        if (i_CurrentRoundOnly != _renderedCurrentRoundOnly)
-        {
-            _renderedCurrentRoundOnly = i_CurrentRoundOnly;
-
-            if (_renderedShowPlayerScoresSetting.HasValue && _renderedShowPlayerScoresSetting.Value)
-            {
-                stateChanged = true;
-            }
-        }
-
-        if (showScoreSettingsChanged)
-        {
-            var showScoresChanged = ResolveShowPlayerScores();
-
-            if (showScoresChanged)
-            {
-                SetNoScoreCssClass();
-                stateChanged = true;
-            }
-        }
-
-        if (stateChanged)
-        {
-            InvokeAsyncStateHasChanged();
+            SetNoScoreCssClass();
         }
     }
 
     private void InitializeTeamData()
     {
-        _team = ScrimTeamsManager.GetTeam(i_TeamOrdinal);
+        _team = ScrimTeamsManager.GetTeam(TeamOrdinal);
 
         InvokeAsync(() =>
         {
             lock (_renderedPlayers)
             {
-                var visiblePlayers = _team.Players.Where(p => ShouldShowPlayer(p) && !_renderedPlayers.Contains(p));
+                IEnumerable<Player> visiblePlayers = _team.Players.Where(p => ShouldShowPlayer(p) && !_renderedPlayers.Contains(p));
 
                 _renderedPlayers.AddRange(visiblePlayers);
-
                 _renderedPlayersCount = _renderedPlayers.Count();
 
                 SetCompact5sCssClass();
-
                 StateHasChanged();
             }
         });
@@ -174,10 +121,10 @@
     #region Event Handling
     private void ReceiveTeamPlayerChangeEvent(object sender, ScrimMessageEventArgs<TeamPlayerChangeMessage> e)
     {
-        var message = e.Message;
+        TeamPlayerChangeMessage message = e.Message;
+        Player player = message.Player;
 
-        var player = message.Player;
-        if (player.TeamOrdinal != i_TeamOrdinal)
+        if (player.TeamOrdinal != TeamOrdinal)
         {
             return;
         }
@@ -186,10 +133,14 @@
 
         if (message.ChangeType != TeamPlayerChangeType.Remove)
         {
-            newMessage = ShouldShowPlayer(player)
-                            ? new TeamPlayerChangeMessage(player, TeamPlayerChangeType.Add)
-                            : new TeamPlayerChangeMessage(player, TeamPlayerChangeType.Remove);
-
+            if (ShouldShowPlayer(player))
+            {
+                newMessage = new TeamPlayerChangeMessage(player, TeamPlayerChangeType.Add);
+            }
+            else
+            {
+                newMessage = new TeamPlayerChangeMessage(player, TeamPlayerChangeType.Remove);
+            }
         }
         else
         {
@@ -203,17 +154,15 @@
 
     private void ReceivePlayerStatUpdateEvent(object sender, ScrimMessageEventArgs<PlayerStatUpdateMessage> e)
     {
-        var message = e.Message;
-        var player = message.Player;
+        Player player = e.Message.Player;
 
-        if (player.TeamOrdinal != i_TeamOrdinal)
+        if (player.TeamOrdinal != TeamOrdinal)
         {
             return;
         }
 
-        var changeType = ShouldShowPlayer(player) ? TeamPlayerChangeType.Add : TeamPlayerChangeType.Remove;
-
-        var changeMessage = new TeamPlayerChangeMessage(player, changeType);
+        TeamPlayerChangeType changeType = ShouldShowPlayer(player) ? TeamPlayerChangeType.Add : TeamPlayerChangeType.Remove;
+        TeamPlayerChangeMessage changeMessage = new TeamPlayerChangeMessage(player, changeType);
 
         _teamPlayersQueue.Enqueue(changeMessage);
 
@@ -222,16 +171,10 @@
 
     private void ReceiveTeamFactionChangeEvent(object sender, ScrimMessageEventArgs<TeamFactionChangeMessage> e)
     {
-        var message = e.Message;
-
-        var teamOrdinal = message.TeamOrdinal;
-
-        if (teamOrdinal != i_TeamOrdinal)
+        if (e.Message.TeamOrdinal == TeamOrdinal)
         {
-            return;
+            InvokeAsync(StateHasChanged);
         }
-
-        InvokeAsyncStateHasChanged();
     }
     #endregion Event Handling
 
@@ -243,7 +186,7 @@
             {
                 while (_teamPlayersQueue.TryDequeue(out TeamPlayerChangeMessage changeMessage))
                 {
-                    var player = changeMessage.Player;
+                    Player player = changeMessage.Player;
 
                     if (changeMessage.ChangeType == TeamPlayerChangeType.Remove)
                     {
@@ -258,7 +201,6 @@
                 _renderedPlayersCount = _renderedPlayers.Count();
 
                 SetCompact5sCssClass();
-
                 StateHasChanged();
             }
         });
@@ -271,16 +213,16 @@
 
     private bool ResolveShowPlayerScores()
     {
-        var previousShowScores = _renderedShowPlayerScoresSetting;
+        bool? previousShowScores = _renderedShowPlayerScores;
 
-        if (_renderedShowPlayerScoresSetting != null)
+        if (_renderedShowPlayerScores != null)
         {
-            _resolvedShowScores = (bool)_renderedShowPlayerScoresSetting;
+            _resolvedShowScores = _renderedShowPlayerScores.Value;
 
             return _resolvedShowScores != previousShowScores;
         }
 
-        _resolvedShowScores = _renderedStatsType switch
+        _resolvedShowScores = StatsType switch
         {
             OverlayStatsDisplayType.InfantryScores => true,
             OverlayStatsDisplayType.InfantryObjective => false,
@@ -295,24 +237,16 @@
 
     private void SetCompactModeCssClass()
     {
-        _compactCssClass = _renderedCompact ? "compact" : string.Empty;
+        _compactCssClass = CompactLayout ? CssCompactLayoutClass : string.Empty;
     }
 
     private void SetNoScoreCssClass()
     {
-        _noScoreCssClass = !_resolvedShowScores ? "noScore" : string.Empty;
+        _noScoreCssClass = !_resolvedShowScores ? CssNoScoreClass : string.Empty;
     }
 
     private void SetCompact5sCssClass()
     {
-        _compactFiveColumnsCssClass = _renderedPlayersCount == 10 ? "compact-5-columns" : string.Empty;
-    }
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        _compactFiveColumnsCssClass = _renderedPlayersCount == 10 ? CssCompactFiveColumnsClass : string.Empty;
     }
 }

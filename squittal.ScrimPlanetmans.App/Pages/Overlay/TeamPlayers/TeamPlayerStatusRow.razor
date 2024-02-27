@@ -1,73 +1,29 @@
 ﻿@using squittal.ScrimPlanetmans.ScrimMatch.Models;
 
-@if (i_player != null)
+@if (Player != null)
 {
-    if (i_TeamOrdinal == 1)
+    if (TeamOrdinal == 1)
     {
-        <TeamPlayerStatusRowLoadout Player=i_player />
-        <TeamPlayerStatusRowDetails i_player=i_player i_NoScore=i_NoScore i_CurrentRoundOnly=_renderedCurrentRoundOnly />
+        <TeamPlayerStatusRowLoadout Player=Player />
+        <TeamPlayerStatusRowDetails Player=Player NoScore=NoScore CurrentRoundOnly=CurrentRoundOnly />
     }
-    else if (i_TeamOrdinal == 2)
+    else if (TeamOrdinal == 2)
     {
-        <TeamPlayerStatusRowDetails i_player=i_player  i_NoScore=i_NoScore i_CurrentRoundOnly=_renderedCurrentRoundOnly />
-        <TeamPlayerStatusRowLoadout Player=i_player />
+        <TeamPlayerStatusRowDetails Player=Player NoScore=NoScore CurrentRoundOnly=CurrentRoundOnly />
+        <TeamPlayerStatusRowLoadout Player=Player />
     }
 }
 
-
 @code {
     [Parameter]
-    public Player i_player { get; set; }
-    private string _renderedPlayerId;
+    public Player Player { get; set; }
 
     [Parameter]
-    public int i_TeamOrdinal { get; set; }
-    private int _renderedTeamOrdinal { get; set; }
+    public int TeamOrdinal { get; set; }
 
     [Parameter]
-    public bool i_NoScore { get; set; }
+    public bool NoScore { get; set; }
 
     [Parameter]
-    public bool i_CurrentRoundOnly { get; set; }
-    private bool _renderedCurrentRoundOnly { get; set; } = false;
-
-
-    protected override void OnParametersSet()
-    {
-        var stateChanged = false;
-
-        if (i_player.Id != _renderedPlayerId)
-        {
-            _renderedPlayerId = i_player.Id;
-
-            stateChanged = true;
-        }
-
-        if (i_TeamOrdinal != _renderedTeamOrdinal && i_TeamOrdinal >= 0)
-        {
-            _renderedTeamOrdinal = i_TeamOrdinal;
-
-            stateChanged = true;
-        }
-
-        if (i_CurrentRoundOnly != _renderedCurrentRoundOnly)
-        {
-            _renderedCurrentRoundOnly = i_CurrentRoundOnly;
-
-            stateChanged = true;
-        }
-
-        if (stateChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
-    }
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
+    public bool CurrentRoundOnly { get; set; } = MatchOverlay.DefaultShowCurrentRoundOnly;
 }

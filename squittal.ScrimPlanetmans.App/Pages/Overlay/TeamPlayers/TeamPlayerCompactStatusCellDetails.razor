@@ -10,14 +10,14 @@
 
 @implements IDisposable
 
-@if (i_player != null)
+@if (Player != null)
 {
     <div class="playerStatusContainer @GetContainerCssClass() @_noScoreCssClass">
-        <TeamPlayerCompactStatusCellLoadout i_player=i_player />
+        <TeamPlayerCompactStatusCellLoadout Player=Player />
 
-        <div class="name">@_renderedName</div>
+        <div class="name">@Player.NameDisplay</div>
 
-        @if (!_renderedNoScore)
+        @if (!NoScore)
         {
             <div class="score">
                 <div class="net">
@@ -40,36 +40,33 @@
 }
 
 @code {
-    [Parameter]
-    public Player i_player { get; set; }
+    private const string CssNoScoreClass = "noScore";
+    private const int DeathEventEffectiveDurationMs = 7000;
+    private const int ObjectiveTickEventEffectiveDurationMs = 2950;
+    private const int ReviveEventEffectiveDurationMs = 1000;
 
-    [Parameter]
-    public bool i_NoScore { get; set; }
-    private bool _renderedNoScore { get; set; } = false;
-
-    [Parameter]
-    public bool i_CurrentRoundOnly { get; set; }
-    private bool _renderedCurrentRoundOnly { get; set; } = false;
-
-    private int _currentRound { get; set; }
-
-    private string _noScoreCssClass { get; set; } = string.Empty;
-
-    private string _renderedPlayerId;
-    private string _renderedName;
-    private int _renderedNetScore;
-
-    private ConcurrentQueue<ScrimKillfeedEvent> _eventsQueue { get; set; } = new ConcurrentQueue<ScrimKillfeedEvent>();
-    private Timer _timer;
     private readonly AutoResetEvent _autoEvent = new AutoResetEvent(true);
 
-    private PlayerStatus _renderedStatus = PlayerStatus.Alive;
-    private DateTime _lastDeathTime { get; set; }
-    private DateTime _lastRevivedTime { get; set; }
-    private DateTime _lastProcessedEventTime { get; set; }
-    private DateTime _lastRenderedDeathTime { get; set; }
-    private DateTime _lastRenderedEventTime { get; set; }
+    private int _currentRound;
+    private int _renderedNetScore;
+    private string _noScoreCssClass = string.Empty;
 
+    private ConcurrentQueue<ScrimKillfeedEvent> _eventsQueue = new ConcurrentQueue<ScrimKillfeedEvent>();
+    private Timer _timer;
+
+    private PlayerStatus _renderedStatus = PlayerStatus.Alive;
+    private DateTime _lastDeathTime;
+    private DateTime _lastRevivedTime;
+    private DateTime _lastRenderedDeathTime;
+
+    [Parameter]
+    public Player Player { get; set; }
+
+    [Parameter]
+    public bool NoScore { get; set; }
+
+    [Parameter]
+    public bool CurrentRoundOnly { get; set; } = MatchOverlay.DefaultShowCurrentRoundOnly;
 
     #region Initialization Methods
     protected override void OnInitialized()
@@ -78,13 +75,10 @@
         //MessageService.RaisePlayerLogoutEvent += ReceivePlayerLogoutEvent;
 
         MessageService.RaisePlayerStatUpdateEvent += ReceivePlayerStatUpdateEvent;
-
         MessageService.RaisePlayerNameDisplayChangeEvent += ReceivePlayerNameDisplayChangeMessageEvent;
-
         MessageService.RaiseScrimDeathActionEvent += ReceiveScrimDeathActionEvent;
         MessageService.RaiseScrimReviveActionEvent += ReceiveScrimReviveActionEvent;
         MessageService.RaiseScrimObjectiveTickActionEvent += ReceiveScrimObjectiveTickActionEvent;
-
         MessageService.RaiseMatchStateUpdateEvent += ReceiveMatchStateUpdateEvent;
 
         _currentRound = ScrimMatchEngine.GetCurrentRound();
@@ -95,77 +89,42 @@
     public void Dispose()
     {
         MessageService.RaisePlayerStatUpdateEvent -= ReceivePlayerStatUpdateEvent;
-
         MessageService.RaisePlayerNameDisplayChangeEvent -= ReceivePlayerNameDisplayChangeMessageEvent;
-
         MessageService.RaiseScrimDeathActionEvent -= ReceiveScrimDeathActionEvent;
         MessageService.RaiseScrimReviveActionEvent -= ReceiveScrimReviveActionEvent;
         MessageService.RaiseScrimObjectiveTickActionEvent -= ReceiveScrimObjectiveTickActionEvent;
-
         MessageService.RaiseMatchStateUpdateEvent -= ReceiveMatchStateUpdateEvent;
     }
 
     protected override void OnParametersSet()
     {
-        var stateHasChanged = false;
+        CheckForChanges(Player);
+        SetNoScoreCssClass();
 
-        if (CheckForChanges(i_player))
-        {
-            stateHasChanged = true;
-        }
-
-        if (i_NoScore != _renderedNoScore)
-        {
-            _renderedNoScore = i_NoScore;
-
-            SetNoScoreCssClass();
-
-            stateHasChanged = true;
-        }
-
-        if (i_CurrentRoundOnly != _renderedCurrentRoundOnly)
-        {
-            _renderedCurrentRoundOnly = i_CurrentRoundOnly;
-
-            _currentRound = ScrimMatchEngine.GetCurrentRound();
-
-            stateHasChanged = true;
-        }
-
-        if (!_renderedNoScore)
+        if (!NoScore)
         {
             int newNetScore = 0;
 
-            if (_renderedCurrentRoundOnly)
+            if (CurrentRoundOnly)
             {
-                if (i_player.EventAggregateTracker.RoundHistory.TryGetValue(_currentRound, out var roundStats))
+                if (Player.EventAggregateTracker.RoundHistory.TryGetValue(_currentRound, out ScrimEventAggregate roundStats))
                 {
                     newNetScore = roundStats.NetScore;
                 }
                 else
                 {
-                    newNetScore = i_player.EventAggregateTracker.RoundStats.Points;
+                    newNetScore = Player.EventAggregateTracker.RoundStats.Points;
                 }
             }
             else
             {
-                newNetScore = i_player.EventAggregate.NetScore;
+                newNetScore = Player.EventAggregate.NetScore;
             }
 
             if (_renderedNetScore != newNetScore)
             {
                 _renderedNetScore = newNetScore;
-
-                stateHasChanged = true;
             }
-        }
-
-        if (stateHasChanged)
-        {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
         }
     }
     #endregion Initialization Methods
@@ -173,20 +132,14 @@
     #region Event Handling
     private void ReceivePlayerStatUpdateEvent(object sender, ScrimMessageEventArgs<PlayerStatUpdateMessage> e)
     {
-        var message = e.Message;
-        var player = message.Player;
-
-        if (player != i_player)
+        if (e.Message.Player != Player)
         {
             return;
         }
 
-        if (CheckForChanges(player))
+        if (CheckForChanges(e.Message.Player))
         {
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
+            InvokeAsync(StateHasChanged);
         }
     }
 
@@ -202,20 +155,19 @@
 
     private void ReceiveScrimDeathActionEvent(object sender, ScrimMessageEventArgs<ScrimDeathActionEventMessage> e)
     {
-        var deathEvent = e.Message.DeathEvent;
+        ScrimDeathActionEvent deathEvent = e.Message.DeathEvent;
 
-        if (deathEvent.AttackerPlayer != i_player && deathEvent.VictimPlayer != i_player)
+        if (deathEvent.AttackerPlayer != Player && deathEvent.VictimPlayer != Player)
         {
             return;
         }
 
-        if (deathEvent.VictimPlayer == i_player)
+        if (deathEvent.VictimPlayer == Player)
         {
             _lastDeathTime = deathEvent.Timestamp;
         }
 
-        var killfeedEvent = ConvertToKillfeedEvent(deathEvent);
-
+        ScrimKillfeedEvent killfeedEvent = ConvertToKillfeedEvent(deathEvent);
         _eventsQueue.Enqueue(killfeedEvent);
 
         UpdateRenderedStatus();
@@ -223,20 +175,19 @@
 
     private void ReceiveScrimReviveActionEvent(object sender, ScrimMessageEventArgs<ScrimReviveActionEventMessage> e)
     {
-        var reviveEvent = e.Message.ReviveEvent;
+        ScrimReviveActionEvent reviveEvent = e.Message.ReviveEvent;
 
-        if (reviveEvent.MedicPlayer != i_player && reviveEvent.RevivedPlayer != i_player)
+        if (reviveEvent.MedicPlayer != Player && reviveEvent.RevivedPlayer != Player)
         {
             return;
         }
 
-        if (reviveEvent.RevivedPlayer == i_player)
+        if (reviveEvent.RevivedPlayer == Player)
         {
             _lastRevivedTime = reviveEvent.Timestamp;
         }
 
-        var killfeedEvent = ConvertToKillfeedEvent(reviveEvent);
-
+        ScrimKillfeedEvent killfeedEvent = ConvertToKillfeedEvent(reviveEvent);
         _eventsQueue.Enqueue(killfeedEvent);
 
         UpdateRenderedStatus();
@@ -244,16 +195,15 @@
 
     private void ReceiveScrimObjectiveTickActionEvent(object sender, ScrimMessageEventArgs<ScrimObjectiveTickActionEventMessage> e)
     {
-        var objectiveTickEvent = e.Message.ObjectiveTickEvent;
-        var actionType = objectiveTickEvent.ActionType;
+        ScrimObjectiveTickActionEvent objectiveTickEvent = e.Message.ObjectiveTickEvent;
+        ScrimActionType actionType = objectiveTickEvent.ActionType;
 
-        if (objectiveTickEvent.Player != i_player || (actionType != ScrimActionType.ObjectiveCapturePulse && actionType != ScrimActionType.ObjectiveDefensePulse))
+        if (objectiveTickEvent.Player != Player || (actionType != ScrimActionType.ObjectiveCapturePulse && actionType != ScrimActionType.ObjectiveDefensePulse))
         {
             return;
         }
 
-        var killfeedEvent = ConvertToKillfeedEvent(objectiveTickEvent);
-
+        ScrimKillfeedEvent killfeedEvent = ConvertToKillfeedEvent(objectiveTickEvent);
         _eventsQueue.Enqueue(killfeedEvent);
 
         UpdateRenderedStatus();
@@ -261,66 +211,46 @@
 
     private void ReceivePlayerNameDisplayChangeMessageEvent(object sender, ScrimMessageEventArgs<PlayerNameDisplayChangeMessage> e)
     {
-        var player = e.Message.Player;
-
-        if (player.Id != _renderedPlayerId)
+        if (e.Message.Player.Id == Player.Id)
         {
-            return;
-        }
-
-        var newDisplayName = e.Message.NewNameDisplay;
-
-        if (newDisplayName != _renderedName)
-        {
-            _renderedName = newDisplayName;
-
-            InvokeAsync(() =>
-            {
-                StateHasChanged();
-            });
+            InvokeAsync(StateHasChanged);
         }
     }
 
     private void ReceiveMatchStateUpdateEvent(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
     {
-        if (!_renderedCurrentRoundOnly || _renderedNoScore)
+        if (!CurrentRoundOnly || NoScore)
         {
             return;
         }
 
-        var message = e.Message;
-
-        var oldCurrentRound = _currentRound;
-        var newCurrentRound = message.CurrentRound;
+        int oldCurrentRound = _currentRound;
+        int newCurrentRound = e.Message.CurrentRound;
 
         if (oldCurrentRound != newCurrentRound)
         {
             _currentRound = newCurrentRound;
 
-            if (!i_player.EventAggregateTracker.RoundHistory.TryGetValue(_currentRound, out var roundStats))
+            if (!Player.EventAggregateTracker.RoundHistory.TryGetValue(_currentRound, out var roundStats))
             {
-                roundStats = i_player.EventAggregateTracker.RoundStats;
+                roundStats = Player.EventAggregateTracker.RoundStats;
             }
 
-            var newNetScore = roundStats.NetScore;
+            int newNetScore = roundStats.NetScore;
             if (_renderedNetScore != newNetScore)
             {
                 _renderedNetScore = newNetScore;
 
-                InvokeAsync(() =>
-                {
-                    StateHasChanged();
-                });
+                InvokeAsync(StateHasChanged);
             }
         }
     }
-
     #endregion
 
     #region ScrimKillfeedEvent Conversions
     private ScrimKillfeedEvent ConvertToKillfeedEvent(ScrimDeathActionEvent deathEvent)
     {
-        var weaponName = deathEvent.Weapon?.Name;
+        string weaponName = deathEvent.Weapon?.Name;
         if (string.IsNullOrWhiteSpace(weaponName))
         {
             weaponName = "Unknown Weapon";
@@ -337,8 +267,7 @@
             IsHeadshot = deathEvent.IsHeadshot,
             PreviousRenderTime = DateTime.Now,
             FirstRenderTime = DateTime.Now,
-            //EffectiveDurationMilliseconds = 10000
-            EffectiveDurationMilliseconds = 7000
+            EffectiveDurationMilliseconds = DeathEventEffectiveDurationMs
         };
     }
 
@@ -354,7 +283,7 @@
             Points = reviveEvent.Points,
             PreviousRenderTime = DateTime.Now,
             FirstRenderTime = DateTime.Now,
-            EffectiveDurationMilliseconds = 1000
+            EffectiveDurationMilliseconds = ReviveEventEffectiveDurationMs
         };
     }
 
@@ -368,10 +297,9 @@
             Points = objectiveTickEvent.Points,
             PreviousRenderTime = DateTime.Now,
             FirstRenderTime = DateTime.Now,
-            EffectiveDurationMilliseconds = 2950
+            EffectiveDurationMilliseconds = ObjectiveTickEventEffectiveDurationMs
         };
     }
-
     #endregion ScrimKillfeedEvent Conversions
 
     private void UpdateRenderedStatus()
@@ -391,13 +319,13 @@
                 return;
             }
 
-            var eventType = newEvent.EventType;
-            var eventDuration = newEvent.EffectiveDurationMilliseconds;
-            var playerIsActor = (newEvent.ActingPlayer == i_player);
+            KillfeedEventType eventType = newEvent.EventType;
+            int eventDuration = newEvent.EffectiveDurationMilliseconds;
+            bool playerIsActor = (newEvent.ActingPlayer == Player);
 
-            var newTimestamp = newEvent.Timestamp;
+            DateTime newTimestamp = newEvent.Timestamp;
 
-            var secondsSinceLastRenderedDeath = (newTimestamp - _lastRenderedDeathTime).TotalSeconds;
+            double secondsSinceLastRenderedDeath = (newTimestamp - _lastRenderedDeathTime).TotalSeconds;
 
             if (eventType == KillfeedEventType.Kill)
             {
@@ -493,28 +421,16 @@
     {
         bool stateHasChanged = false;
 
-        if (player.Id != _renderedPlayerId)
-        {
-            _renderedPlayerId = player.Id;
-            stateHasChanged = true;
-        }
-
-        if (player.NameDisplay != _renderedName)
-        {
-            _renderedName = player.NameDisplay;
-            stateHasChanged = true;
-        }
-
-        if (_renderedCurrentRoundOnly && !_renderedNoScore)
+        if (CurrentRoundOnly && !NoScore)
         {
             _currentRound = ScrimMatchEngine.GetCurrentRound();
 
-            if (!player.EventAggregateTracker.TryGetTargetRoundStats(_currentRound, out var roundStats))
+            if (!player.EventAggregateTracker.TryGetTargetRoundStats(_currentRound, out ScrimEventAggregate roundStats))
             {
                 roundStats = player.EventAggregateTracker.RoundStats;
             }
 
-            var playerNetScore = roundStats.NetScore;
+            int playerNetScore = roundStats.NetScore;
 
             if (playerNetScore != _renderedNetScore)
             {
@@ -522,9 +438,9 @@
                 stateHasChanged = true;
             }
         }
-        else if (!_renderedCurrentRoundOnly && !_renderedNoScore)
+        else if (!CurrentRoundOnly && !NoScore)
         {
-            var playerNetScore = player.EventAggregate.NetScore;
+            int playerNetScore = player.EventAggregate.NetScore;
 
             if (playerNetScore != _renderedNetScore)
             {
@@ -532,18 +448,6 @@
                 stateHasChanged = true;
             }
         }
-
-
-        //if (!_renderedNoScore && !_renderedCurrentRoundOnly && player.EventAggregate.NetScore != _renderedNetScore && !_renderedNoScore)
-        //{
-        //    _renderedNetScore = player.EventAggregate.NetScore;
-        //    stateHasChanged = true;
-        //}
-        //else if (!_renderedNoScore && _renderedCurrentRoundOnly && player.EventAggregateTracker.RoundStats.NetScore != _renderedNetScore && !_renderedNoScore)
-        //{
-        //    _renderedNetScore = player.EventAggregateTracker.RoundStats.NetScore;
-        //    stateHasChanged = true;
-        //}
 
         return stateHasChanged;
     }
@@ -566,7 +470,7 @@
 
     private void SetNoScoreCssClass()
     {
-        _noScoreCssClass = _renderedNoScore ? "noScore" : string.Empty;
+        _noScoreCssClass = NoScore ? CssNoScoreClass : string.Empty;
     }
 
     private string GetNetScoreLabelCssClass()

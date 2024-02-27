@@ -23,8 +23,8 @@
 
 @if (ShowPlayers && _activeStatsDisplayType != null)
 {
-    <TeamPlayerStatusesContainer i_TeamOrdinal=1 i_Compact=_useCompactLayout.Value i_StatsType=_activeStatsDisplayType.Value i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
-    <TeamPlayerStatusesContainer i_TeamOrdinal=2 i_Compact=_useCompactLayout.Value i_StatsType=_activeStatsDisplayType.Value i_ShowPlayerScoresSetting=_showStatusPanelScores i_CurrentRoundOnly=ShowCurrentRoundOnly />
+    <TeamPlayerStatusesContainer TeamOrdinal=1 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
+    <TeamPlayerStatusesContainer TeamOrdinal=2 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
 }
 
 @if (ShowScoreboard)
