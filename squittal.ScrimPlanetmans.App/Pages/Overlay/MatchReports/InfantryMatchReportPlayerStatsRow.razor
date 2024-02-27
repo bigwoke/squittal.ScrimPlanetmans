@@ -9,66 +9,57 @@
 
 @implements IDisposable
 
-@if (_player != null)
+@if (Player != null)
 {
-    <div id="@($"{_player.NameDisplay}-stats")" class="stats-row player">
-        <div id="@($"{_player.NameDisplay}-label")" class="label primary-light">
-            <TeamPlayerStatusRowLoadout i_player=@_player/><span>@_player.NameDisplay</span>
+    <div id="@($"{Player.NameDisplay}-stats")" class="stats-row player">
+        <div id="@($"{Player.NameDisplay}-label")" class="label primary-light">
+            <TeamPlayerStatusRowLoadout Player=Player /><span>@Player.NameDisplay</span>
         </div>
-        
-        @if (!_renderedUseObjectiveStats)
+
+        @if (!UseObjectiveStats)
         {
-            <div id="@($"{_player.NameDisplay}-score")" class="score stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Points);">@_renderedEventAggregate.Points</div>
-            <div id="@($"{_player.NameDisplay}-graph")" class="graph">
-                <div id="@($"{_player.NameDisplay}-graph-bar")" class="graph-bar" style="width: @($"{_pointGraphWidth}%")"></div>
+            <div id="@($"{Player.NameDisplay}-score")" class="score stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Points);">@_renderedEventAggregate.Points</div>
+            <div id="@($"{Player.NameDisplay}-graph")" class="graph">
+                <div id="@($"{Player.NameDisplay}-graph-bar")" class="graph-bar" style="width: @($"{_pointGraphWidth}%")"></div>
             </div>
-            <div id="@($"{_player.NameDisplay}-net")" class="net stats-value">
+            <div id="@($"{Player.NameDisplay}-net")" class="net stats-value">
                 <span class="value">@_renderedEventAggregate.NetScore</span><span class="label @GetNetScoreLabelCssClass()">@GetNetScoreLabelText()</span>
             </div>
         }
 
-        <div id="@($"{_player.NameDisplay}-kills")" class="kills stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Kills);">@_renderedEventAggregate.Kills</div>
-        <div id="@($"{_player.NameDisplay}-deaths")" class="deaths stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Deaths);">@_renderedEventAggregate.Deaths</div>
-        
-        @if (_renderedShowHsr && !_renderedUseObjectiveStats)
+        <div id="@($"{Player.NameDisplay}-kills")" class="kills stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Kills);">@_renderedEventAggregate.Kills</div>
+        <div id="@($"{Player.NameDisplay}-deaths")" class="deaths stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.Deaths);">@_renderedEventAggregate.Deaths</div>
+
+        @if (ShowHsr && !UseObjectiveStats)
         {
-            <div id="@($"{_player.NameDisplay}-hsr")" class="hsr stats-value" style="opacity: @GetStatOpacity((int)_renderedEventAggregate.HeadshotRatio);">@Math.Round(_renderedEventAggregate.HeadshotRatio, 0)<span style="font-size: small;">%</span></div>
-        }
-        
-        @if (_renderedUseObjectiveStats)
-        {
-            <div id="@($"{_player .NameDisplay}-objective-ticks")" class="objective-ticks stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.ObjectiveTicks);">@_renderedEventAggregate.ObjectiveTicks</div>
-            <div id="@($"{_player .NameDisplay}-revives")" class="revives stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.RevivesGiven);">@_renderedEventAggregate.RevivesGiven</div>
-            <div id="@($"{_player.NameDisplay}-revives-taken")" class="revives-taken stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.RevivesTaken);">@_renderedEventAggregate.RevivesTaken</div>
+            <div id="@($"{Player.NameDisplay}-hsr")" class="hsr stats-value" style="opacity: @GetStatOpacity((int)_renderedEventAggregate.HeadshotRatio);">@Math.Round(_renderedEventAggregate.HeadshotRatio, 0)<span style="font-size: small;">%</span></div>
         }
 
-        <div id="@($"{_player.NameDisplay}-assists")" class="assists stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.DamageAssists);">@_renderedEventAggregate.DamageAssists</div>
+        @if (UseObjectiveStats)
+        {
+            <div id="@($"{Player.NameDisplay}-objective-ticks")" class="objective-ticks stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.ObjectiveTicks);">@_renderedEventAggregate.ObjectiveTicks</div>
+            <div id="@($"{Player.NameDisplay}-revives")" class="revives stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.RevivesGiven);">@_renderedEventAggregate.RevivesGiven</div>
+            <div id="@($"{Player.NameDisplay}-revives-taken")" class="revives-taken stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.RevivesTaken);">@_renderedEventAggregate.RevivesTaken</div>
+        }
+
+        <div id="@($"{Player.NameDisplay}-assists")" class="assists stats-value" style="opacity: @GetStatOpacity(_renderedEventAggregate.DamageAssists);">@_renderedEventAggregate.DamageAssists</div>
     </div>
 }
 
 @code {
-    [Parameter]
-    public Player i_Player { get; set; }
-    private Player _player { get; set; }
+    private ScrimEventAggregate _renderedEventAggregate = new ScrimEventAggregate();
+
+    private decimal _pointGraphWidth = 4;
+    private int _currentMaxPoints = 0;
 
     [Parameter]
-    public string i_CharacterId { get; set; }
-    private string _renderedCharacterId { get; set; }
+    public Player Player { get; set; }
 
     [Parameter]
-    public bool i_ShowHsr { get; set; } = true;
-    private bool _renderedShowHsr { get; set; } = true;
+    public bool ShowHsr { get; set; } = MatchOverlay.DefaultShowHsr;
 
     [Parameter]
-    public bool i_UseObjectiveStats { get; set; }
-    private bool _renderedUseObjectiveStats { get; set; }
-
-    private ScrimEventAggregate _renderedEventAggregate { get; set; } = new ScrimEventAggregate();
-
-    private string _renderedDisplayName { get; set; } = string.Empty;
-
-    private decimal _pointGraphWidth { get; set; } = 4;
-    private int _currentMaxPoints { get; set; } = 0;
+    public bool UseObjectiveStats { get; set; }
 
 
     #region Initialization Methods
@@ -77,22 +68,7 @@
         MessageService.RaisePlayerStatUpdateEvent += ReceivePlayerStatUpdateEvent;
         MessageService.RaisePlayerNameDisplayChangeEvent += ReceivePlayerNameDisplayChangeMessageEvent;
 
-        if (_player == null)
-        {
-            _player = i_Player;
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_player.EventAggregate);
-            _renderedDisplayName = _player.NameDisplay;
-        }
-        else
-        {
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_player.EventAggregate);
-            _renderedDisplayName = _player.NameDisplay;
-        }
-
         _currentMaxPoints = ScrimTeamsManager.MaxPlayerPointsTracker.GetMaxPoints();
-
         UpdatePointGraphWidth();
     }
 
@@ -104,69 +80,39 @@
 
     protected override void OnParametersSet()
     {
-        var stateHasChanged = false;
+        _renderedEventAggregate = new ScrimEventAggregate();
+        _renderedEventAggregate.Add(Player.EventAggregate);
 
-        if (i_ShowHsr != _renderedShowHsr)
+        InvokeAsync(() =>
         {
-            _renderedShowHsr = i_ShowHsr;
+            _currentMaxPoints = ScrimTeamsManager.MaxPlayerPointsTracker.GetMaxPoints();
 
-            stateHasChanged = true;
-        }
-
-        if (i_UseObjectiveStats != _renderedUseObjectiveStats)
-        {
-            _renderedUseObjectiveStats = i_UseObjectiveStats;
-
-            stateHasChanged = true;
-        }
-
-        if (_player != i_Player)
-        {
-            _renderedCharacterId = i_CharacterId;
-            _player = i_Player;
-
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_player.EventAggregate);
-
-            _renderedDisplayName = _player.NameDisplay;
-
-            InvokeAsync(() =>
-            {
-                _currentMaxPoints = ScrimTeamsManager.MaxPlayerPointsTracker.GetMaxPoints();
-
-                UpdatePointGraphWidth();
-
-                StateHasChanged();
-            });
-        }
-        else if (stateHasChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
+            UpdatePointGraphWidth();
+            StateHasChanged();
+        });
     }
     #endregion Initialization Methods
 
     #region Event Handling
     private void ReceivePlayerStatUpdateEvent(object sender, ScrimMessageEventArgs<PlayerStatUpdateMessage> e)
     {
-        var player = e.Message.Player;
-        var overlayData = e.Message.OverlayMessageData;
+        Player player = e.Message.Player;
+        OverlayMessageData overlayData = e.Message.OverlayMessageData;
 
-        if (overlayData.RedrawPointGraph && player != _player)
+        if (overlayData.RedrawPointGraph && player != Player)
         {
             _currentMaxPoints = ScrimTeamsManager.MaxPlayerPointsTracker.GetMaxPoints();
 
             UpdatePointGraphWidth();
-
-            InvokeAsyncStateHasChanged();
+            InvokeAsync(StateHasChanged);
         }
 
-        if (player == _player)
+        if (player == Player)
         {
-            if (RenderedStatsHaveChanged(player.EventAggregate, out var redrawGraph))
+            if (RenderedStatsHaveChanged(player.EventAggregate, out bool redrawGraph))
             {
                 _renderedEventAggregate = new ScrimEventAggregate();
-                _renderedEventAggregate.Add(_player.EventAggregate);
+                _renderedEventAggregate.Add(Player.EventAggregate);
 
                 _currentMaxPoints = ScrimTeamsManager.MaxPlayerPointsTracker.GetMaxPoints();
 
@@ -175,42 +121,32 @@
                     UpdatePointGraphWidth();
                 }
 
-                InvokeAsyncStateHasChanged();
+                InvokeAsync(StateHasChanged);
             }
         }
     }
 
     private void ReceiveTeamStatUpdateEvent(object sender, ScrimMessageEventArgs<TeamStatUpdateMessage> e)
     {
-        var overlayData = e.Message.OverlayMessageData;
+        OverlayMessageData overlayData = e.Message.OverlayMessageData;
 
         if (overlayData.RedrawPointGraph)
         {
             _currentMaxPoints = overlayData.MatchMaxPlayerPoints;
 
             UpdatePointGraphWidth();
-
-            InvokeAsyncStateHasChanged();
+            InvokeAsync(StateHasChanged);
         }
     }
 
     private void ReceivePlayerNameDisplayChangeMessageEvent(object sender, ScrimMessageEventArgs<PlayerNameDisplayChangeMessage> e)
     {
-        var player = e.Message.Player;
-
-        if (player != _player)
+        if (e.Message.Player != Player)
         {
             return;
         }
 
-        var newDisplayName = e.Message.NewNameDisplay;
-
-        if (newDisplayName != _renderedDisplayName)
-        {
-            _renderedDisplayName = newDisplayName;
-
-            InvokeAsyncStateHasChanged();
-        }
+        InvokeAsync(StateHasChanged);
     }
     #endregion Event Handling
 
@@ -218,12 +154,12 @@
     {
         redrawGraph = false;
 
-        if (_renderedEventAggregate.Points != newAggregate.Points && !_renderedUseObjectiveStats)
+        if (_renderedEventAggregate.Points != newAggregate.Points && !UseObjectiveStats)
         {
             redrawGraph = true;
             return true;
         }
-        else if (_renderedEventAggregate.NetScore != newAggregate.NetScore && !_renderedUseObjectiveStats)
+        else if (_renderedEventAggregate.NetScore != newAggregate.NetScore && !UseObjectiveStats)
         {
             redrawGraph = true;
             return true;
@@ -232,7 +168,7 @@
         {
             return true;
         }
-        else if (_renderedEventAggregate.HeadshotRatio != newAggregate.HeadshotRatio && _renderedShowHsr && !_renderedUseObjectiveStats)
+        else if (_renderedEventAggregate.HeadshotRatio != newAggregate.HeadshotRatio && ShowHsr && !UseObjectiveStats)
         {
             return true;
         }
@@ -240,15 +176,15 @@
         {
             return true;
         }
-        else if (_renderedEventAggregate.RevivesGiven != newAggregate.DamageAssists && _renderedUseObjectiveStats)
+        else if (_renderedEventAggregate.RevivesGiven != newAggregate.DamageAssists && UseObjectiveStats)
         {
             return true;
         }
-        else if (_renderedEventAggregate.RevivesTaken != newAggregate.DamageAssists && _renderedUseObjectiveStats)
+        else if (_renderedEventAggregate.RevivesTaken != newAggregate.DamageAssists && UseObjectiveStats)
         {
             return true;
         }
-        else if (_renderedEventAggregate.ObjectiveTicks != newAggregate.ObjectiveTicks && _renderedUseObjectiveStats)
+        else if (_renderedEventAggregate.ObjectiveTicks != newAggregate.ObjectiveTicks && UseObjectiveStats)
         {
             return true;
         }
@@ -260,18 +196,10 @@
 
     private void UpdatePointGraphWidth()
     {
-        var maxPoints = _currentMaxPoints;
-
-        var playerPoints = _renderedEventAggregate.Points;
+        int maxPoints = _currentMaxPoints;
+        int playerPoints = _renderedEventAggregate.Points;
 
         _pointGraphWidth = (playerPoints >= 1 && maxPoints > 0) ? Math.Ceiling(90 * ((decimal)playerPoints / (decimal)maxPoints)) : 4;
-    }
-
-    private double GetStatOpacity(int value)
-    {
-        return (value != 0)
-            ? 1.0
-            : 0.5;
     }
 
     private string GetNetScoreLabelCssClass()
@@ -302,11 +230,10 @@
         }
     }
 
-    private void InvokeAsyncStateHasChanged()
+    private static double GetStatOpacity(int value)
     {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        return (value != 0)
+            ? 1.0
+            : 0.5;
     }
 }

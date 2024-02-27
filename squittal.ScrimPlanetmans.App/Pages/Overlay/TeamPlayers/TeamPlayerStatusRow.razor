@@ -4,13 +4,13 @@
 {
     if (i_TeamOrdinal == 1)
     {
-        <TeamPlayerStatusRowLoadout i_player=i_player />
+        <TeamPlayerStatusRowLoadout Player=i_player />
         <TeamPlayerStatusRowDetails i_player=i_player i_NoScore=i_NoScore i_CurrentRoundOnly=_renderedCurrentRoundOnly />
     }
     else if (i_TeamOrdinal == 2)
     {
         <TeamPlayerStatusRowDetails i_player=i_player  i_NoScore=i_NoScore i_CurrentRoundOnly=_renderedCurrentRoundOnly />
-        <TeamPlayerStatusRowLoadout i_player=i_player />
+        <TeamPlayerStatusRowLoadout Player=i_player />
     }
 }
 

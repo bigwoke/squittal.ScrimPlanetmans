@@ -4,19 +4,19 @@
 {
     <div id="MatchStats" class="match-report infantry @GetReportCss()">
 
-        @if (_renderedCompact)
+        @if (CompactLayout)
         {
             <div class="team-report-container team1">
-                <InfantryMatchReportTeam i_TeamOrdinal=1 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=false />
+                <InfantryMatchReportTeam TeamOrdinal=1 ShowHsr=ShowHsr UseObjectiveStats=false />
             </div>
             <div class="team-report-container team2">
-                <InfantryMatchReportTeam i_TeamOrdinal=2 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=false />
+                <InfantryMatchReportTeam TeamOrdinal=2 ShowHsr=ShowHsr UseObjectiveStats=false />
             </div>
         }
         else
         {
-            <InfantryMatchReportTeam i_TeamOrdinal=1 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=false />
-            <InfantryMatchReportTeam i_TeamOrdinal=2 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=false />
+            <InfantryMatchReportTeam TeamOrdinal=1 ShowHsr=ShowHsr UseObjectiveStats=false />
+            <InfantryMatchReportTeam TeamOrdinal=2 ShowHsr=ShowHsr UseObjectiveStats=false />
         }
 
     </div>
@@ -24,121 +24,93 @@
 else if (_renderedStatsType != null && _renderedStatsType == OverlayStatsDisplayType.InfantryObjective)
 {
     <div id="MatchStats" class="match-report infantry @GetReportCss()">
-        
-        @if (_renderedCompact)
+
+        @if (CompactLayout)
         {
             <div class="team-report-container team1">
-                <InfantryMatchReportTeam i_TeamOrdinal=1 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=true />
+                <InfantryMatchReportTeam TeamOrdinal=1 ShowHsr=ShowHsr UseObjectiveStats=true />
             </div>
             <div class="team-report-container team2">
-                <InfantryMatchReportTeam i_TeamOrdinal=2 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=true />
+                <InfantryMatchReportTeam TeamOrdinal=2 ShowHsr=ShowHsr UseObjectiveStats=true />
             </div>
         }
         else
         {
-            <InfantryMatchReportTeam i_TeamOrdinal=1 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=true />
-            <InfantryMatchReportTeam i_TeamOrdinal=2 i_ShowHsr=_renderedShowHsr i_UseObjectiveStats=true />
+            <InfantryMatchReportTeam TeamOrdinal=1 ShowHsr=ShowHsr UseObjectiveStats=true />
+            <InfantryMatchReportTeam TeamOrdinal=2 ShowHsr=ShowHsr UseObjectiveStats=true />
         }
 
     </div>
 }
 
 @code {
-    [Parameter]
-    public bool i_ShowHsr { get; set; } = true;
-    private bool _renderedShowHsr { get; set; } = true;
+    private const string CssNoHsrClass = "no-hsr";
+    private const string CssObjectiveStatsClass = "objective-stats";
+    private const string CssCompactLayoutClass = "compact";
+    private const string CssShowScoresClass = "status-scores";
+
+    private OverlayStatsDisplayType? _renderedStatsType;
+    private bool? _renderedShowPlayerScores;
+
+    private bool _resolvedShowScores = true;
 
     [Parameter]
-    public bool i_Compact { get; set; }
-    private bool _renderedCompact { get; set; } = false;
+    public bool ShowHsr { get; set; } = MatchOverlay.DefaultShowHsr;
 
     [Parameter]
-    public OverlayStatsDisplayType i_StatsType { get; set; }
-    private OverlayStatsDisplayType? _renderedStatsType { get; set; }
+    public bool CompactLayout { get; set; }
 
     [Parameter]
-    public bool? i_ShowPlayerScoresSetting { get; set; }
-    private bool? _renderedShowPlayerScoresSetting { get; set; }
+    public OverlayStatsDisplayType StatsType { get; set; }
 
-    private bool _resolvedShowScores { get; set; } = true;
-
-    private OverlayStatsDisplayType _defaultStatsType = OverlayStatsDisplayType.InfantryScores;
-
+    [Parameter]
+    public bool? ShowPlayerScores { get; set; }
 
     #region Initialization Methods
     protected override void OnParametersSet()
     {
-        var stateHasChanged = false;
+        bool showScoreSettingsChanged = false;
 
-        if (_renderedShowHsr != i_ShowHsr)
+        if (_renderedStatsType != StatsType)
         {
-            _renderedShowHsr = i_ShowHsr;
-
-            stateHasChanged = true;
-        }
-
-        if (_renderedCompact != i_Compact)
-        {
-            _renderedCompact = i_Compact;
-
-            stateHasChanged = true;
-        }
-
-        var showScoreSettingsChanged = false;
-
-        if (_renderedStatsType != i_StatsType)
-        {
-            _renderedStatsType = (i_StatsType == OverlayStatsDisplayType.InfantryObjective) ? i_StatsType : _defaultStatsType;
-
+            _renderedStatsType = (StatsType == OverlayStatsDisplayType.InfantryObjective) ? StatsType : MatchOverlay.DefaultStatsType;
             showScoreSettingsChanged = true;
         }
 
-        if (i_ShowPlayerScoresSetting != _renderedShowPlayerScoresSetting)
+        if (ShowPlayerScores != _renderedShowPlayerScores)
         {
-            _renderedShowPlayerScoresSetting = i_ShowPlayerScoresSetting;
-
+            _renderedShowPlayerScores = ShowPlayerScores;
             showScoreSettingsChanged = true;
         }
 
         if (showScoreSettingsChanged)
         {
-            var showScoresChanged = ResolveShowPlayerScores();
-
+            bool showScoresChanged = ResolveShowPlayerScores();
             if (showScoresChanged)
             {
-                stateHasChanged = true;
+                InvokeAsyncStateHasChanged();
             }
         }
-
-        if (stateHasChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
-
-
     }
     #endregion Initialization Methods
 
     private string GetReportCss()
     {
-        var hsrCssClass = _renderedShowHsr ? string.Empty : "no-hsr";
-
-        var statsCssClass = (_renderedStatsType == OverlayStatsDisplayType.InfantryObjective) ? "objective-stats" : string.Empty;
-
-        var compactCssClass = i_Compact ? "compact" : string.Empty;
-
-        var scores = _resolvedShowScores ? "status-scores" : string.Empty;
+        string hsrCssClass = ShowHsr ? string.Empty : CssNoHsrClass;
+        string statsCssClass = (_renderedStatsType == OverlayStatsDisplayType.InfantryObjective) ? CssObjectiveStatsClass : string.Empty;
+        string compactCssClass = CompactLayout ? CssCompactLayoutClass : string.Empty;
+        string scores = _resolvedShowScores ? CssShowScoresClass : string.Empty;
 
         return $"{hsrCssClass} {statsCssClass} {compactCssClass} {scores}";
     }
 
     private bool ResolveShowPlayerScores()
     {
-        var previousShowScores = _renderedShowPlayerScoresSetting;
+        bool? previousShowScores = _renderedShowPlayerScores;
 
-        if (_renderedShowPlayerScoresSetting != null)
+        if (_renderedShowPlayerScores != null)
         {
-            _resolvedShowScores = (bool)_renderedShowPlayerScoresSetting;
+            _resolvedShowScores = _renderedShowPlayerScores.Value;
 
             return _resolvedShowScores != previousShowScores;
         }
@@ -156,11 +128,5 @@ else if (_renderedStatsType != null && _renderedStatsType == OverlayStatsDisplay
         return _resolvedShowScores != previousShowScores;
     }
 
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
+    private void InvokeAsyncStateHasChanged() => InvokeAsync(StateHasChanged);
 }

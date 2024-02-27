@@ -1,59 +1,26 @@
 ﻿@using squittal.ScrimPlanetmans.ScrimMatch.Models;
 
-@if (_renderedStatsType != null && UseInfantryMatchReport())
+@if (UseInfantryMatchReport())
 {
-    <InfantryMatchReport i_ShowHsr=i_ShowHsr i_StatsType=(OverlayStatsDisplayType)_renderedStatsType i_Compact=_renderedCompact i_ShowPlayerScoresSetting=i_ShowPlayerScoresSetting />
+    <InfantryMatchReport ShowHsr=ShowHsr StatsType=StatsType CompactLayout=CompactLayout ShowPlayerScores=ShowPlayerScores />
 }
 
 @code {
     [Parameter]
-    public bool i_ShowHsr { get; set; } = true;
+    public bool ShowHsr { get; set; } = MatchOverlay.DefaultShowHsr;
 
     [Parameter]
-    public bool? i_ShowPlayerScoresSetting { get; set; }
+    public bool? ShowPlayerScores { get; set; }
 
     [Parameter]
-    public bool i_Compact { get; set; }
-    private bool _renderedCompact { get; set; } = false;
+    public bool CompactLayout { get; set; }
 
     [Parameter]
-    public OverlayStatsDisplayType i_StatsType { get; set; }
-    private OverlayStatsDisplayType? _renderedStatsType { get; set; }
-
-    private OverlayStatsDisplayType _defaultStatsType = OverlayStatsDisplayType.InfantryScores;
-
-
-    #region Initialization Methods
-    protected override void OnParametersSet()
-    {
-        var stateHasChanged = false;
-
-        if (_renderedCompact != i_Compact)
-        {
-            _renderedCompact = i_Compact;
-
-            stateHasChanged = true;
-        }
-
-        if (_renderedStatsType != i_StatsType)
-        {
-            _renderedStatsType = (i_StatsType == OverlayStatsDisplayType.InfantryObjective) ? i_StatsType : _defaultStatsType;
-
-            stateHasChanged = true;
-        }
-
-        if (stateHasChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
-
-
-    }
-    #endregion Initialization Methods
+    public OverlayStatsDisplayType StatsType { get; set; }
 
     private bool UseInfantryMatchReport()
     {
-        switch (_renderedStatsType)
+        switch (StatsType)
         {
             case OverlayStatsDisplayType.InfantryScores:
                 return true;
@@ -64,13 +31,5 @@
             default:
                 return false;
         }
-    }
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
     }
 }

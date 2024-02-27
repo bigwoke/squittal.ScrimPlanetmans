@@ -19,33 +19,17 @@
     }
 }
 
-
 @code {
+    private Team _team;
+    private ScrimEventAggregate _renderedEventAggregate = new ScrimEventAggregate();
+
     [Parameter]
-    public int i_TeamOrdinal { get; set; }
-
-    private Team _team { get; set; }
-
-    private int _renderedTeamOrdinal { get; set; }
-
-    private ScrimEventAggregate _renderedEventAggregate { get; set; } = new ScrimEventAggregate();
+    public int TeamOrdinal { get; set; }
 
     #region Initialization Methods
     protected override void OnInitialized()
     {
         MessageService.RaiseTeamStatUpdateEvent += ReceiveTeamStatUpdateEvent;
-
-        if (_team == null)
-        {
-            _team = ScrimTeamsManager.GetTeam(i_TeamOrdinal);
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_team.EventAggregate);
-        }
-        else
-        {
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_team.EventAggregate);
-        }
     }
 
     public void Dispose()
@@ -55,32 +39,25 @@
 
     protected override void OnParametersSet()
     {
-        if (i_TeamOrdinal != _renderedTeamOrdinal)
-        {
-            _renderedTeamOrdinal = i_TeamOrdinal;
-            _team = ScrimTeamsManager.GetTeam(_renderedTeamOrdinal);
-
-            _renderedEventAggregate = new ScrimEventAggregate();
-            _renderedEventAggregate.Add(_team.EventAggregate);
-
-            InvokeAsyncStateHasChanged();
-        }
+        _team = ScrimTeamsManager.GetTeam(TeamOrdinal);
+        _renderedEventAggregate = new ScrimEventAggregate();
+        _renderedEventAggregate.Add(_team.EventAggregate);
     }
     #endregion Initialization Methods
 
     #region Event Handling
     private void ReceiveTeamStatUpdateEvent(object sender, ScrimMessageEventArgs<TeamStatUpdateMessage> e)
     {
-        var team = e.Message.Team;
+        Team team = e.Message.Team;
 
-        if (team.TeamOrdinal == i_TeamOrdinal)
+        if (team.TeamOrdinal == TeamOrdinal)
         {
             if (RenderedStatsHaveChanged(team.EventAggregate))
             {
                 _renderedEventAggregate = new ScrimEventAggregate();
                 _renderedEventAggregate.Add(_team.EventAggregate);
 
-                InvokeAsyncStateHasChanged();
+                InvokeAsync(StateHasChanged);
             }
         }
     }
@@ -98,16 +75,9 @@
         }
     }
 
-    private double GetStatOpacity(int value)
-    {
-        return (value != 0)
-            ? 1.0
-            : 0.5;
-    }
-
     private string GetPointsDisplay()
     {
-        var points = _renderedEventAggregate.CapturePoints;
+        int points = _renderedEventAggregate.CapturePoints;
 
         if (points >= 0)
         {
@@ -119,11 +89,10 @@
         }
     }
 
-    private void InvokeAsyncStateHasChanged()
+    private static double GetStatOpacity(int value)
     {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
+        return (value != 0)
+            ? 1.0
+            : 0.5;
     }
 }

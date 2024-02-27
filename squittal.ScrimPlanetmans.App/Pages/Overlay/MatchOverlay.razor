@@ -34,7 +34,7 @@
 
 @if (ShowReport && _activeStatsDisplayType != null && !ShowAnalytics)
 {
-    <MatchReportContainer i_ShowHsr=ShowHsr i_StatsType=_activeStatsDisplayType.Value i_Compact=_useCompactLayout.Value i_ShowPlayerScoresSetting=_showStatusPanelScores />
+    <MatchReportContainer ShowHsr=ShowHsr StatsType=_activeStatsDisplayType.Value CompactLayout=_useCompactLayout.Value ShowPlayerScores=_showStatusPanelScores />
 }
 else if (ShowReport && ShowAnalytics)
 {
