@@ -1,21 +1,21 @@
 ﻿@using squittal.ScrimPlanetmans.Models;
 
-@if (_renderedCaptureCount == 1)
+@if (CaptureCount == 1)
 {
-    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(_renderedFactionId) @_teamCssClass">
+    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(FactionId) team@(TeamOrdinal)">
         <span class="iconify capture-flag" data-icon="ion:flag" data-inline="false"></span>
     </div>
 }
-else if (_renderedCaptureCount == 2)
+else if (CaptureCount == 2)
 {
-    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(_renderedFactionId) @_teamCssClass">
+    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(FactionId) team@(TeamOrdinal)">
         <span class="iconify capture-flag stacked" data-icon="ion:flag" data-inline="false"></span><span class="iconify capture-flag" data-icon="ion:flag" data-inline="false"></span>
     </div>
 }
-else if (_renderedCaptureCount >= 3)
+else if (CaptureCount >= 3)
 {
-    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(_renderedFactionId) @_teamCssClass">
-        <span class="iconify capture-flag" data-icon="ion:flag" data-inline="false"></span><span class="capture-flag-label">x@_renderedCaptureCount</span>
+    <div class="capture-flag-container @SqCssHelper.GetFactionClassFromId(FactionId) team@(TeamOrdinal)">
+        <span class="iconify capture-flag" data-icon="ion:flag" data-inline="false"></span><span class="capture-flag-label">x@CaptureCount</span>
     </div>
 }
 else
@@ -25,57 +25,11 @@ else
 
 @code {
     [Parameter]
-    public int i_captureCount { get; set; }
-    private int _renderedCaptureCount { get; set; } = 0;
+    public int CaptureCount { get; set; }
 
     [Parameter]
-    public int? i_factionId { get; set; }
-    private int? _renderedFactionId { get; set; } = (int?)null;
+    public int? FactionId { get; set; }
 
     [Parameter]
-    public int i_teamOrdinal { get; set; }
-    private int _renderedTeamOrdinal { get; set; }
-
-    private string _teamCssClass { get; set; } = string.Empty;
-
-    #region Initialization Methods
-    protected override void OnParametersSet()
-    {
-        var paramsChanged = false;
-
-        if (i_captureCount != _renderedCaptureCount)
-        {
-            _renderedCaptureCount = i_captureCount;
-            paramsChanged = true;
-        }
-
-        if (i_factionId != _renderedFactionId)
-        {
-            _renderedFactionId = i_factionId;
-            paramsChanged = true;
-        }
-
-        if (i_teamOrdinal != _renderedTeamOrdinal)
-        {
-            _renderedTeamOrdinal = i_teamOrdinal;
-
-            _teamCssClass = $"team{_renderedTeamOrdinal}";
-
-            paramsChanged = true;
-        }
-
-        if (paramsChanged)
-        {
-            InvokeAsyncStateHasChanged();
-        }
-    }
-    #endregion Initialization Methods
-
-    private void InvokeAsyncStateHasChanged()
-    {
-        InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-    }
+    public int TeamOrdinal { get; set; }
 }
