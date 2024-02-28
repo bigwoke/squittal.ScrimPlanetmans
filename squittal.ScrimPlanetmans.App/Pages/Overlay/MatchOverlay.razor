@@ -12,37 +12,38 @@
 @using squittal.ScrimPlanetmans.ScrimMatch.Messages;
 
 @inject IScrimRulesetManager RulesetManager 
+@inject IScrimMatchEngine ScrimMatchEngine
 @inject IScrimMessageBroadcastService MessageService
 @inject NavigationManager NavManager
 
-@if (ShowTitle)
-{
-    <MatchTitle />
-}
+<div style="@GetContainerStyle()">
+    @if (ShowTitle)
+    {
+        <MatchTitle />
+    }
 
-@if (ShowPlayers && _activeStatsDisplayType != null)
-{
-    <TeamPlayerStatusesContainer TeamOrdinal=1 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
-    <TeamPlayerStatusesContainer TeamOrdinal=2 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
-}
+    @if (ShowPlayers && _activeStatsDisplayType != null)
+    {
+        <TeamPlayerStatusesContainer TeamOrdinal=1 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
+        <TeamPlayerStatusesContainer TeamOrdinal=2 CompactLayout=_useCompactLayout.Value StatsType=_activeStatsDisplayType.Value ShowPlayerScores=_showStatusPanelScores CurrentRoundOnly=ShowCurrentRoundOnly />
+    }
 
-@if (ShowScoreboard)
-{
-    <ScoreboardContainer CurrentRoundOnly=ShowCurrentRoundOnly ShowTeams="ShowTeams" />
-}
+    @if (ShowScoreboard)
+    {
+        <ScoreboardContainer CurrentRoundOnly=ShowCurrentRoundOnly ShowTeams="ShowTeams" />
+    }
 
-@if (ShowReport && _activeStatsDisplayType != null && !ShowAnalytics)
-{
-    <MatchReportContainer ShowHsr=ShowHsr StatsType=_activeStatsDisplayType.Value CompactLayout=_useCompactLayout.Value ShowPlayerScores=_showStatusPanelScores />
-}
-else if (ShowReport && ShowAnalytics)
-{
-    <MatchAnalyticReportContainer CurrentRoundOnly=ShowCurrentRoundOnly ShowHsr=ShowHsr StatsType=_activeStatsDisplayType.Value />
-}
+    @if (ShowReport && _activeStatsDisplayType != null && !ShowAnalytics)
+    {
+        <MatchReportContainer ShowHsr=ShowHsr StatsType=_activeStatsDisplayType.Value CompactLayout=_useCompactLayout.Value ShowPlayerScores=_showStatusPanelScores />
+    }
+    else if (ShowReport && ShowAnalytics)
+    {
+        <MatchAnalyticReportContainer CurrentRoundOnly=ShowCurrentRoundOnly ShowHsr=ShowHsr StatsType=_activeStatsDisplayType.Value />
+    }
 
-@if (ShowFeed)
-{
-    <Feed />
-}
-
-
+    @if (ShowFeed)
+    {
+        <Feed />
+    }
+</div>

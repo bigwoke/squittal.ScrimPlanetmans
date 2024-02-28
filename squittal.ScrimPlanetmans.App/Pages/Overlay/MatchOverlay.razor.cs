@@ -23,6 +23,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         public const bool DefaultShowHsr = true;
         public const bool DefaultShowCurrentRoundOnly = false;
         public const bool DefaultShowTeams = true;
+        public const bool DefaultShowInactive = true;
         public const OverlayStatsDisplayType DefaultStatsType = OverlayStatsDisplayType.InfantryScores;
 
         private Ruleset _activeRuleset;
@@ -71,6 +72,10 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         public bool ShowTeams { get; set; } = DefaultShowTeams;
 
         [Parameter]
+        [QueryBoolParameter("showInactive", DefaultShowInactive)]
+        public bool ShowInactive { get; set; } = DefaultShowInactive;
+
+        [Parameter]
         [QueryBoolParameter("compact")]
         public bool? CompactLayout { get; set; }
         private bool IsManualCompactLayout => CompactLayout is not null;
@@ -81,6 +86,7 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
         {
             MessageService.RaiseActiveRulesetChangeEvent += OnActiveRulesetChanged;
             MessageService.RaiseRulesetOverlayConfigurationChangeEvent += OnRulesetOverlayConfigurationChanged;
+            MessageService.RaiseMatchStateUpdateEvent += OnMatchStateUpdate;
 
             _activeRuleset = await RulesetManager.GetActiveRulesetAsync(false);
 
@@ -154,6 +160,11 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
                 }
             }
         }
+
+        private void OnMatchStateUpdate(object sender, ScrimMessageEventArgs<MatchStateUpdateMessage> e)
+        {
+            InvokeAsync(StateHasChanged);
+        }
         #endregion Event Handling
 
         private bool TryUpdateFromRuleset(RulesetOverlayConfiguration configuration)
@@ -179,6 +190,13 @@ namespace squittal.ScrimPlanetmans.App.Pages.Overlay
             }
 
             return stateChanged;
+        }
+
+        private string GetContainerStyle()
+        {
+            return !ShowInactive && ScrimMatchEngine.GetMatchState() == MatchState.Uninitialized
+                ? "display: none"
+                : string.Empty;
         }
     }
 }

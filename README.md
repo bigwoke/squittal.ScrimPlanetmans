@@ -175,6 +175,7 @@ The general formula for using the parameters is `.../overlay?param1=value1&param
 | reportHsr  | The HSR column in the match report                   |
 | analytic    | Set to true to switch the match stats report to a more detailed version, similar to the Analytic Match Reports (see below)|). The data in the report is refreshed on page load and then every 5 seconds. |
 | currentRound | Enable to show stats for the current round instead of the match totals. Currently supported by the scoreboard, player status boxes, and analytic report. The real-time report doesn't support this parameter. Omit or set this parameter to false to show match totals (the original/default behavior). |
+| showInactive | Show overlay components even while no match is actively ongoing (default: true).
 
 #### Examples
 
