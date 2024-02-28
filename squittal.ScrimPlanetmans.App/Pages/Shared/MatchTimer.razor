@@ -15,7 +15,14 @@
 }
 else
 {
-    <span>@_clock</span>
+    if (_clock == "00:00")
+    {
+        <span class="timer-finished">@_clock</span>
+    }
+    else
+    {
+        <span>@_clock</span>
+    }
 }
 
 <script>
@@ -34,18 +41,12 @@ else
 <audio id="timerAudio"><source id="timerAudioSource" src="/resources/buzzer1.wav" /></audio>
 
 @code {
-    [Parameter]
-    public bool Debug { get; set; } = false;
-
     private string _clock = "--:--";
     private TimerState _clockStatus = TimerState.Uninitialized;
-    private string _clockStatusDisplay
-    {
-        get
-        {
-            return Enum.GetName(typeof(TimerState), _clockStatus);
-        }
-    }
+
+    [Parameter]
+    public bool Debug { get; set; } = false;
+    private string _clockStatusDisplay => Enum.GetName(typeof(TimerState), _clockStatus);
 
     #region Initialization Methods
 
